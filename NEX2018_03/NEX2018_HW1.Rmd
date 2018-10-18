@@ -1,0 +1,67 @@
+---
+title: "NEX2018_HW1"
+author: "Jiri Franc and his friends"
+date: "18 října 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+library(ggplot2)
+```
+
+## R Markdown info:
+
+This is an R Markdown document which is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>. When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+## Example: 
+Summary of dataset cars:
+```{r cars}
+summary(cars)
+```
+
+Les's visualize the dataset by ggplot.
+```{r}
+ggplot(cars, aes(x=speed, y=dist)) + 
+    geom_point(size=2, alpha=0.8) + 
+    theme_bw() +
+    xlab("Speed of car") + 
+    ylab("Stopping distance") + 
+    ggtitle("Speed and Stopping Distances of Car (1920s)")
+```
+## Question: What can we conclude from it? 
+
+Answer: ...
+
+Lets try some linear models:
+```{r}
+cars_lm1 <- lm(dist ~ -1 +speed , data = cars)
+cars_lm2 <- lm(dist ~  speed , data = cars)
+cars_lm3 <- lm(dist ~  I(speed^2) , data = cars)
+cars_lm4 <- lm(dist ~  speed + I(speed^2) , data = cars)
+```
+And see summary function from model with intercept and quadratic term.
+```{r}
+summary(cars_lm3)
+```
+Plot all models into one figure:
+```{r}
+plot(dist ~ speed, data = cars, xlim = c(0,30), ylim = c(0,130),pch=20,
+    col = "black", xaxs="i",yaxs="i",
+    main="Speed and Stopping Distances of Car (1920s)",xlab="Speed", ylab="Stopping Distance")
+abline(cars_lm1, col ="blue4")
+abline(cars_lm2, col ="red4")
+#lines(sort(cars$speed), fitted(cars_lm3)[order(cars$speed)], col='green')
+lines(seq(0, 30, 0.5), predict(cars_lm3,data.frame(speed = seq(0, 30, 0.5))), col='blue')
+lines(seq(0, 30, 0.5), predict(cars_lm4,data.frame(speed = seq(0, 30, 0.5))), col='red')
+legend("topleft",legend = c("linear","intercept + linear",
+                            "quadratic","intercept + linear + quadratic"),
+                         lty = c(1,1,1,1),col = c("blue4","red4","blue","red"))
+
+```
+
+## Question 02:
+
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
