@@ -35,6 +35,8 @@ In this assigment we use a data set "experiment_data". The data give number of d
 * DIAMETER - the diameter of the ring in cm, a categorical variable with three levels "1", "3", "5";
 * HAND - the hand or hands used to perform the experiment, a categorical variable with three levels, "D" - dominant hand, "N" - non-dominant hand , "B" - both hands;
 
+The goal is to study the influence of a ring size and hand/hands used to perform the experiment on a number of hits. 
+
 #Mean values and variances
 
 The following table provides the summary of the data set: 
