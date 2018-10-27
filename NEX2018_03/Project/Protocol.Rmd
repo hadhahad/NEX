@@ -126,7 +126,7 @@ ggplot(data = hit_data) +
 According to the boxplot visualization we can speculate, that 
 mean values are significantly different for the "DIAMETER"" variable. 
 
-# Interaction plot
+# Interaction plots
 
 
 
@@ -236,7 +236,7 @@ lillie.test(residuals_aov)
 As a result of the test, we cannot reject the residuals normality hypothesis for both models.
 
 
-We perform Fisher's LSD-test,
+##Fisher's LSD-test.
 
 ```{r, echo = FALSE}
 lsd_all_hand <- LSD.test(hit_data$HITS_SUM, hit_data$HAND, DFerror = 28, 11.1)
@@ -259,7 +259,7 @@ lsd_all_diameter
 
 
 
-and Tukey's HSD-test,
+##Tukey's HSD-test.
 
 
 
