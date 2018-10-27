@@ -5,10 +5,19 @@ date: "25.10.2018"
 output: pdf_document
 ---
 
+
+
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(agricolae)
 library(car)
 library(ggplot2)
+library(nortest)
+# Loading libraries
+packages <- c("tidyverse", "data.table", "car", "ggplot2", "agricolae", "nortest")
+lapply(packages, require, character.only = TRUE)
+rm(packages)
 # Loading source files
 source("DataPreparation.R")
 
@@ -18,66 +27,232 @@ hit_data <- loadExperimentData("./data/experiment_data.csv",
                                shuffle_rows = FALSE)
 ```
 
-## R Markdown info:
-In this assigment we use a data set "Experimentdata". The data set consisting of 36 observations of 6 variables.
+#Data
+In this assigment we use a data set "experiment_data". The data give the number of dots inside rings with different diameters that a person was able to write during 10 seconds. The data set consisting of 36 observations of 4 variables.
 
-*BLOCK - 
-*HITS_L - 
-*HITS_R - 
-*HITS_SUM - 
-*DIAMETER - 
-*HAND - 
+* BLOCK - 
+* HITS_SUM - total number of hits;
+* DIAMETER - the diameter of the ring in cm, a categorical variable with three levels "1", "3", "5";
+* HAND - the hand or hands used to perform the experiment, a categorical variable with three levels, "D" - dominant hand, "N" - non-dominant hand , "B" - both hands;
 
+#Mean values and variances
 
 The following table provides the summary of the data set: 
 ```{r hit_data, echo = FALSE}
 summary(hit_data)
 ```
 
+The following tables provide the mean values 
 
 
-
-Les's visualize the dataset by ggplot.
-```{r}
-ggplot(cars, aes(x=speed, y=dist)) + 
-    geom_point(size=2, alpha=0.8) + 
-    theme_bw() +
-    xlab("Speed of car") + 
-    ylab("Stopping distance") + 
-    ggtitle("Speed and Stopping Distances of Car (1920s)")
-```
-## Question: What can we conclude from it? 
-
-Answer: ...
-
-Lets try some linear models:
-```{r}
-cars_lm1 <- lm(dist ~ -1 +speed , data = cars)
-cars_lm2 <- lm(dist ~  speed , data = cars)
-cars_lm3 <- lm(dist ~  I(speed^2) , data = cars)
-cars_lm4 <- lm(dist ~  speed + I(speed^2) , data = cars)
-```
-And see summary function from model with intercept and quadratic term.
-```{r}
-summary(cars_lm3)
-```
-Plot all models into one figure:
-```{r}
-plot(dist ~ speed, data = cars, xlim = c(0,30), ylim = c(0,130),pch=20,
-    col = "black", xaxs="i",yaxs="i",
-    main="Speed and Stopping Distances of Car (1920s)",xlab="Speed", ylab="Stopping Distance")
-abline(cars_lm1, col ="blue4")
-abline(cars_lm2, col ="red4")
-#lines(sort(cars$speed), fitted(cars_lm3)[order(cars$speed)], col='green')
-lines(seq(0, 30, 0.5), predict(cars_lm3,data.frame(speed = seq(0, 30, 0.5))), col='blue')
-lines(seq(0, 30, 0.5), predict(cars_lm4,data.frame(speed = seq(0, 30, 0.5))), col='red')
-legend("topleft",legend = c("linear","intercept + linear",
-                            "quadratic","intercept + linear + quadratic"),
-                         lty = c(1,1,1,1),col = c("blue4","red4","blue","red"))
-
+```{r means, echo = FALSE}
+means_block <- tapply(hit_data$HITS_SUM, hit_data$BLOCK, mean)
+means_hand <- tapply(hit_data$HITS_SUM, hit_data$HAND, mean)
+means_diameter <- tapply(hit_data$HITS_SUM, hit_data$DIAMETER, mean)
+means_block
+means_hand
+means_diameter
 ```
 
-## Question 02:
+
+and variances for each block.
+
+```{r var, echo = FALSE}
+var_block <- tapply(hit_data$HITS_SUM, hit_data$BLOCK, var)
+var_hand <- tapply(hit_data$HITS_SUM, hit_data$HAND, var)
+var_diameter <- tapply(hit_data$HITS_SUM, hit_data$DIAMETER, var)
+var_block
+var_hand
+var_diameter
+```
+  We can see that mean values for each of the blocks are slightly different. However, the 4th block 
+ shows an outstanding behavior. As a result, further investigation is needed. 
+ Regarding circle diameters, the data shows, that with bigger diameter the number
+ of hits increases. 
+ Turning to mean values with respect to the hand, as expected, the number of hits 
+made by the dominant hand is significantly larger than that of 
+ the non-dominant and both hands.
+  The variance shows the same behavior as that of mean values. Once again, the 4th 
+block displays outlying behavior performance.
+
+#Data visualization
+
+Let's visualize the dataset using boxplots.
 
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+```{r boxplot, echo = FALSE}
+ggplot(data = hit_data) +
+  geom_boxplot(mapping = aes(x = BLOCK, y = HITS_SUM), color = "royalblue3") +
+  labs(title = "Boxplot with Respect to Blocks") + 
+  xlab("Block, [factor]") +
+  ylab("Hit Count")
+
+ggplot(data = hit_data) +
+  geom_boxplot(mapping = aes(x = HAND, y = HITS_SUM), color = "maroon3") +
+  labs(title = "Boxplot with Respect to Hand") + 
+  xlab("Hand, [factor]") +
+  ylab("Hit Count")
+
+ggplot(data = hit_data) +
+  geom_boxplot(mapping = aes(x = DIAMETER, y = HITS_SUM), color = "turquoise3") +
+  labs(title = "Boxplot with Respect to Circle Diameter") + 
+  xlab("Dimater, [cm]") +
+  ylab("Hit Count")
+
+```
+
+
+According to the boxplot visualization we can speculate, that 
+mean values are significantly different for the "DIAMETER"" variable. 
+
+# Interaction plot
+
+
+
+
+```{r int, echo = FALSE}
+ggplot(data = hit_data) +
+  aes(x = BLOCK, color = DIAMETER, group = DIAMETER, y = HITS_SUM) +
+  stat_summary(fun.y = mean, geom = "point") +
+  stat_summary(fun.y = mean, geom = "line") +
+  labs(title = "Interaction Plot of Hits with Respect to Blocks and Circle Diameter",
+       color = "Circle Diameter") +
+  xlab("Block, [factor]") +
+  ylab("Hits Count")
+```
+
+```{r , echo = FALSE}
+ggplot(data = hit_data) +
+  aes(x = HAND, color = DIAMETER, group = DIAMETER, y = HITS_SUM) +
+  stat_summary(fun.y = mean, geom = "point") +
+  stat_summary(fun.y = mean, geom = "line") +
+  labs(title = "Interaction Plot of Hits with Respect to Hand and Circle Diameter",
+       color = "Circle Diameter") +
+  xlab("Hand, [factor]") +
+  ylab("Hits Count")
+```
+
+```{r, echo = FALSE}
+ggplot(data = hit_data) +
+  aes(x = HAND, color = BLOCK, group = BLOCK, y = HITS_SUM) +
+  stat_summary(fun.y = mean, geom = "point") +
+  stat_summary(fun.y = mean, geom = "line") +
+  labs(title = "Interaction Plot of Hits with Respect to Hand and Blocks",
+       color = "Block") +
+  xlab("Hand, [factor]") +
+  ylab("Hits Count")
+```
+ Interaction plots 1 and 3 display, that the 4th block (operator) is different from 
+ the rest. Others show similar ring hits count. This can possibly be caused by 
+ the effect of noise.
+ Interection plot 2 displays the dependence of the ring hits count on the "HAND" 
+ and "DIAMETER" variables, e.g. hits count to the ring of diameter 5 cm for 
+ the dominant hand is the largest.
+ 
+ 
+#ANOVA without interactions 
+```{r anova, echo = FALSE}
+hits_aov_all <- aov(HITS_SUM ~ BLOCK + HAND + DIAMETER, data = hit_data)
+summary(hits_aov_all)
+```
+
+ANOVA has shown, that all variables are significant on the 95% significance level.
+
+```{r, echo = FALSE}
+hits_aov <- aov(HITS_SUM ~ HAND + DIAMETER, data = hit_data)
+summary(hits_aov)
+```
+ Variables "HAND" and "DIAMETER" are still significant even without dependence of
+ the ring hits on the blocks (operators). 
+ That enables us to reject the hypothesis about the equality of mean values.
+
+# Residuals
+```{r, echo = FALSE}
+residuals_aov_all <- residuals(hits_aov_all)
+residuals_aov <- residuals(hits_aov)
+```
+
+# Q-Q plot for residuals
+```{r, echo = FALSE}
+params_all <- as.list(MASS::fitdistr(residuals_aov_all, "normal")$estimate)
+params <- as.list(MASS::fitdistr(residuals_aov, "normal")$estimate)
+ggplot(as.data.frame(residuals_aov_all), aes(sample = residuals_aov_all)) +
+  stat_qq(distribution = qnorm, dparams = params) +
+  stat_qq_line(distribution = qnorm, dparams = params) + 
+  labs(title = "Residuals Normal Q-Q Plot for All Variables") +
+  xlab("Theoretical Quantiles") + 
+  ylab("Sample Quantiles")
+
+params <- as.list(MASS::fitdistr(residuals_aov, "normal")$estimate)
+ggplot(as.data.frame(residuals_aov), aes(sample = residuals_aov)) +
+  stat_qq(distribution = qnorm, dparams = params) +
+  stat_qq_line(distribution = qnorm, dparams = params) + 
+  labs(title = "Residuals Normal Q-Q Plot") +
+  xlab("Theoretical Quantiles") + 
+  ylab("Sample Quantiles")
+```
+
+Q-Q plots lines fit the data in an acceptable way. However, a few values display 
+outlying behavior. Normality tests must be carries out. We perform Shapiro-Wilk test.
+The following is the result of the test. 
+
+
+```{r, echo = FALSE}
+shapiro.test(residuals_aov_all)
+shapiro.test(residuals_aov)
+```
+
+ As p-values from the Shapiro-Wilk test are close to the set significance level (5%), we will also perform the Lilliefors test of normality.
+ 
+```{r, echo = FALSE}
+lillie.test(residuals_aov_all)
+lillie.test(residuals_aov)
+```
+
+
+As a result of the test, we cannot reject the residuals normality hypothesis for both models.
+
+
+We perform Fisher's LSD-test,
+
+```{r, echo = FALSE}
+lsd_all_hand <- LSD.test(hit_data$HITS_SUM, hit_data$HAND, DFerror = 28, 11.1)
+lsd_all_hand
+```
+
+
+
+```{r, echo = FALSE}
+lsd_all_block <- LSD.test(hit_data$HITS_SUM, hit_data$BLOCK, DFerror = 28, 11.1)
+lsd_all_block
+```
+
+
+```{r, echo = FALSE}
+lsd_all_diameter <- LSD.test(hit_data$HITS_SUM, hit_data$DIAMETER, DFerror = 28, 11.1)
+lsd_all_diameter
+```
+
+and Tukey's HSD-test,
+```{r, echo = FALSE}
+hsd_all_hand <- TukeyHSD(hits_aov_all)
+```
+
+```{r, echo = FALSE}
+hsd_all_hand
+```
+
+Once again, we observe significant difference between the 4th block (operator)
+ and 3 other blocks. An interesting observation is that the 3rd block is 
+ on the edge of being significantly similar to the 4th one.
+
+ Both tests have confirmed, that the performance of the dominant hand is 
+ significantly different from other variants.
+
+ Tukey's HSD test and Fisher's LSD test indicate, that rings with diameters 3 cm and 
+ 5 cm are significantly similar. On the other hand, the ring with diameter of 1 cm
+ is significantly different from two other ones.
+ 
+
