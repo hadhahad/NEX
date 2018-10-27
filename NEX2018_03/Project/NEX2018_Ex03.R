@@ -58,7 +58,7 @@ setwd("D:/Vyuka/NEX/2018/03_Factorial_design")
 #     a maximalni (pro nas signifikantni) rozdil, ktery chceme detekovat je 5 bodu v kruhu.
 #     Spoctete pocet potrebnych replikaci, aby sila vysledneho testu byla vetsi nez 0.9
 # 
-#   5) Vytvorte regresni model, kde nebudete uvazovat bloky a velikost kruhu bude kvantitativni promenna.
+#   8) Vytvorte regresni model, kde nebudete uvazovat bloky a velikost kruhu bude kvantitativni promenna.
 #      - zkuste pridat do modelu i druhou mocninu a porovnejte dva regresni modely mezi s sebou a vyberte vhodnejsi
 #      - overte predpoklady pro pouziti vybraneho modelu a vykreslete QQ-plot, residua x fitted values, resida x prumer , ...
 #

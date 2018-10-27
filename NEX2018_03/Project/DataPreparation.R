@@ -36,6 +36,10 @@ loadExperimentData <- function(path, rename_blocks = TRUE, shuffle_rows = FALSE)
   data$DIAMETER <- as.factor(data$DIAMETER)
   data$HAND <- as.factor(data$HAND)
   
+  # Select required columns
+  data <- data %>%
+    select(-c(HITS_L, HITS_R))
+  
   # Return the dataframe
   message("The dataset is ready for use!")
   return(data)
