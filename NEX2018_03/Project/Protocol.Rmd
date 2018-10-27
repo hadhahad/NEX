@@ -28,7 +28,7 @@ hit_data <- loadExperimentData("./data/experiment_data.csv",
 ```
 
 #Data
-In this assigment we use a data set "experiment_data". The data give the number of dots inside rings with different diameters that a person was able to write during 10 seconds. The data set consisting of 36 observations of 4 variables.
+In this assigment we use a data set "experiment_data". The data give number of dots (number of hits) inside rings with different diameters that a testee was able to draw during 10 seconds. The data were collected from the results of four students. The data set consisting of 36 observations of 4 variables.
 
 * BLOCK - 
 * HITS_SUM - total number of hits;
@@ -42,10 +42,10 @@ The following table provides the summary of the data set:
 summary(hit_data)
 ```
 
-The following tables provide the mean values 
+The following tables provide the mean values and variances for each variable.
 
 
-```{r means, echo = FALSE}
+```{r means, echo = FALSE, include=FALSE}
 means_block <- tapply(hit_data$HITS_SUM, hit_data$BLOCK, mean)
 means_hand <- tapply(hit_data$HITS_SUM, hit_data$HAND, mean)
 means_diameter <- tapply(hit_data$HITS_SUM, hit_data$DIAMETER, mean)
@@ -54,10 +54,25 @@ means_hand
 means_diameter
 ```
 
+|  BLOCK      | 1          | 2  | 3 | 4 |
+| ------------- |:-------------| :-----:|:---:|----:|
+| mean value     | 19.00 | 19.67 |22.00| 26.33|
+| variance | 30.75 | 31.00 | 40.75 | 100.75 |
 
-and variances for each block.
+|  HAND      | Both          | Dominant  | Non-Dominant | 
+| ------------- |:-------------| :-----:|---:|
+| mean value     | 19.00 | 25.42 |20.83|
+| variance | 29.82 | 82.45 | 38.70 | 
 
-```{r var, echo = FALSE}
+|  DIAMETER       | 1 cm         | 3 cm  | 5 cm | 
+| ------------- |:-------------| :-----:|---:|
+| mean value     | 14.17 | 24.67 |26.42|
+| variance | 5.42 | 20.97 | 52.63 | 
+
+
+
+
+```{r var, echo = FALSE, include=FALSE}
 var_block <- tapply(hit_data$HITS_SUM, hit_data$BLOCK, var)
 var_hand <- tapply(hit_data$HITS_SUM, hit_data$HAND, var)
 var_diameter <- tapply(hit_data$HITS_SUM, hit_data$DIAMETER, var)
@@ -88,13 +103,17 @@ ggplot(data = hit_data) +
   labs(title = "Boxplot with Respect to Blocks") + 
   xlab("Block, [factor]") +
   ylab("Hit Count")
+```
 
+```{r, echo=FALSE}
 ggplot(data = hit_data) +
   geom_boxplot(mapping = aes(x = HAND, y = HITS_SUM), color = "maroon3") +
   labs(title = "Boxplot with Respect to Hand") + 
   xlab("Hand, [factor]") +
   ylab("Hit Count")
+```
 
+```{r, echo=FALSE}
 ggplot(data = hit_data) +
   geom_boxplot(mapping = aes(x = DIAMETER, y = HITS_SUM), color = "turquoise3") +
   labs(title = "Boxplot with Respect to Circle Diameter") + 
@@ -184,7 +203,9 @@ ggplot(as.data.frame(residuals_aov_all), aes(sample = residuals_aov_all)) +
   labs(title = "Residuals Normal Q-Q Plot for All Variables") +
   xlab("Theoretical Quantiles") + 
   ylab("Sample Quantiles")
+```
 
+```{r, echo=FALSE}
 params <- as.list(MASS::fitdistr(residuals_aov, "normal")$estimate)
 ggplot(as.data.frame(residuals_aov), aes(sample = residuals_aov)) +
   stat_qq(distribution = qnorm, dparams = params) +
@@ -235,7 +256,13 @@ lsd_all_diameter <- LSD.test(hit_data$HITS_SUM, hit_data$DIAMETER, DFerror = 28,
 lsd_all_diameter
 ```
 
+
+
+
 and Tukey's HSD-test,
+
+
+
 ```{r, echo = FALSE}
 hsd_all_hand <- TukeyHSD(hits_aov_all)
 ```
@@ -255,4 +282,41 @@ Once again, we observe significant difference between the 4th block (operator)
  5 cm are significantly similar. On the other hand, the ring with diameter of 1 cm
  is significantly different from two other ones.
  
+#Linear Regression
+ 
+```{r, echo=FALSE}
+lm_data <- hit_data
+lm_data$DIAMETER <- as.numeric(lm_data$DIAMETER)
+```
+
+```{r, echo=FALSE}
+lm_circle_1 <- lm(HITS_SUM ~ -1 + DIAMETER + HAND, data = lm_data)
+summary(lm_circle_1)
+opar <- par(mfrow=c(2,2),cex=.8)
+plot(lm_circle_1)
+par(opar)
+```
+
+```{r, echo=FALSE}
+lm_circle_2 <- lm(HITS_SUM ~ -1 + I(DIAMETER^2) + HAND, data = lm_data)
+summary(lm_circle_2)
+opar <- par(mfrow=c(2,2),cex=.8)
+plot(lm_circle_2)
+par(opar)
+```
+
+## Normality of residuals
+```{r, echo=FALSE}
+shapiro.test(lm_circle_1$residuals)
+```
+
+```{r, echo=FALSE}
+shapiro.test(lm_circle_2$residuals)
+```
+
+ As Q-Q plots and Shapiro-Wilk test indicate, general assumptions for 
+ performing the linear regression task are met. 
+ According to the R-squared statistic, the model with the ring diameter 
+ set to the power of 2 explains the hit data slightly worse. However,
+ the difference is negligible. As a result, we choose the first model.
 
