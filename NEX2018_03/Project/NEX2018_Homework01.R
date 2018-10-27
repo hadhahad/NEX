@@ -2,7 +2,7 @@
 rm(list = ls())
 
 # Loading libraries
-packages <- c("tidyverse", "data.table", "car", "ggplot2", "agricolae", "nortest")
+packages <- c("tidyverse", "data.table", "car", "ggplot2", "agricolae", "nortest", "pwr")
 lapply(packages, require, character.only = TRUE)
 rm(packages)
 
@@ -98,7 +98,7 @@ ggplot(data = hit_data) +
 # the dominant hand is the largest.
 
 
-# ANOVA without interactions ----------------------------------------------
+# ANOVA -------------------------------------------------------------------
 
 hits_aov_all <- aov(HITS_SUM ~ BLOCK + HAND + DIAMETER, data = hit_data)
 summary(hits_aov_all)
@@ -109,6 +109,39 @@ summary(hits_aov)
 # Variables 'HAND' and 'DIAMETER' are still significant even without dependence of
 # the circle hits on the blocks (operators). 
 # That enables us to reject the hypothesis about the equality of mean values.
+
+# ANOVA power
+pwr_blocks <- power.anova.test(groups = 4, n = 9, between.var = (7.3)^2 / (2 * 4), 
+                               within.var = 11.1,
+                               sig.level = 0.05)
+pwr_blocks$power
+
+pwr_hand <- power.anova.test(groups = 3, n = 12, between.var = (6.416667)^2 / (2 * 3), 
+                               within.var = 11.1,
+                               sig.level = 0.05)
+pwr_hand$power
+
+pwr_diameter <- power.anova.test(groups = 3, n = 12, between.var = (12.25)^2 / (2 * 3), 
+                               within.var = 11.1,
+                               sig.level = 0.05)
+pwr_diameter$power
+
+# For each of the variables the ANOVA test power is above 90% which is remarkable.
+
+n <- seq(2, 8)
+a <- 3
+b <- 4
+D <- 5
+sigma <- 4
+
+pwr_blocks_specific <- power.anova.test(groups = 4, n = n, between.var = n*(5)^2 / (n-1), 
+                                        within.var = 16,
+                                        sig.level = 0.05)
+rbind(n, pwr_blocks_specific$power)
+# At least three replications have to be made for each block 
+# to achieve the test power of 90%.
+
+# Residuals Analysis ------------------------------------------------------
 
 # Residuals
 residuals_aov_all <- residuals(hits_aov_all)
@@ -142,7 +175,15 @@ shapiro.test(residuals_aov)
 # we will also perform the Lilliefors test of normality.
 lillie.test(residuals_aov_all)
 lillie.test(residuals_aov)
-# As a result, we cannot reject the residuals normality hypothesis for both models.
+# As a result, we cannot reject the residuals normality hypothesis for both models. 
+# Thus, we are enabled to use ANOVA in spite of the fact, that outlying behavior 
+# of a few data points was spotted.
+
+# It would be also interesting to observe dependence of residuals with respect to measurements
+# order. However, such data are not available within our experiment. 
+
+
+# Differences -------------------------------------------------------------
 
 # Fisher's LSD-test
 lsd_all_hand <- LSD.test(hit_data$HITS_SUM, hit_data$HAND, DFerror = 28, 11.1)
@@ -168,3 +209,31 @@ hsd_all_hand
 # Tukey's HSD test and Fisher's LSD test indicate, that circles with diameters 3 cm and 
 # 5 cm are significantly similar. On the other hand, the circle with diameter of 1 cm
 # is significantly different from two other ones.
+
+
+# Linear Regression -------------------------------------------------------
+
+lm_data <- hit_data
+lm_data$DIAMETER <- as.numeric(lm_data$DIAMETER)
+
+lm_circle_1 <- lm(HITS_SUM ~ -1 + DIAMETER + HAND, data = lm_data)
+summary(lm_circle_1)
+opar <- par(mfrow=c(2,2),cex=.8)
+plot(lm_circle_1)
+par(opar)
+
+lm_circle_2 <- lm(HITS_SUM ~ -1 + I(DIAMETER^2) + HAND, data = lm_data)
+summary(lm_circle_2)
+opar <- par(mfrow=c(2,2),cex=.8)
+plot(lm_circle_2)
+par(opar)
+
+# Normality of residuals
+shapiro.test(lm_circle_1$residuals)
+shapiro.test(lm_circle_2$residuals)
+
+# As Q-Q plots and Shapiro-Wilk test indicate, general assumptions for 
+# performing the linear regression task are met. 
+# According to the R-squared statistic, the model with the circle diameter 
+# set to the power of 2 explains the hit data slightly worse. However,
+# the difference is negligible. As a result, we choose the first model.
