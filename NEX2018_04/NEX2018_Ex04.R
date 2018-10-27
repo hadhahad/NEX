@@ -18,7 +18,7 @@ library(DoE.base)      # Full factorials, orthogonal arrays and base utilities f
 
 # Solve Problems 4-23, 4.40, and 4-42 from Montgomery.
 
-Problem_4_23 <- read.table("Problem_4_23.txt",header=TRUE,sep=";")
-Problem_4_40 <- read.table("Problem_4_40.txt",header=TRUE,sep=";")
-Problem_4_42 <- read.table("Problem_4_42.txt",header=TRUE,sep=";")
+Problem_4_23 <- read.table("Data/Problem_4_23.txt",header=TRUE,sep=";")
+Problem_4_40 <- read.table("Data/Problem_4_40.txt",header=TRUE,sep=";")
+Problem_4_42 <- read.table("Data/Problem_4_42.txt",header=TRUE,sep=";")
 
