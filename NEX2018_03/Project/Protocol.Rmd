@@ -28,14 +28,14 @@ hit_data <- loadExperimentData("./data/experiment_data.csv",
 ```
 
 #Data
-In this assigment we use a data set "experiment_data". The data give number of dots (number of hits) inside rings with different diameters that a testee was able to draw during 10 seconds. The data were collected from the results of four students. The data set consisting of 36 observations of 4 variables.
+In this assigment we use a data set "experiment_data". The data give number of dots (number of hits) inside circles with different diameters that a testee was able to draw during 10 seconds. The data were collected from the results of four students. The data set consisting of 36 observations of 4 variables.
 
-* BLOCK - 
+* BLOCK - a testee;
 * HITS_SUM - total number of hits;
-* DIAMETER - the diameter of the ring in cm, a categorical variable with three levels "1", "3", "5";
+* DIAMETER - the diameter of the circle in cm, a categorical variable with three levels "1", "3", "5";
 * HAND - the hand or hands used to perform the experiment, a categorical variable with three levels, "D" - dominant hand, "N" - non-dominant hand , "B" - both hands;
 
-The goal is to study the influence of a ring size and hand/hands used to perform the experiment on a number of hits. 
+The goal is to study the influence of a circle size and hand/hands used to perform the experiment on a number of hits. 
 
 #Mean values and variances
 
@@ -87,14 +87,14 @@ var_diameter
  Regarding circle diameters, the data shows, that with bigger diameter the number
  of hits increases. 
  Turning to mean values with respect to the hand, as expected, the number of hits 
-made by the dominant hand is significantly larger than that of 
+made by the dominant hand is noticeably larger than that of 
  the non-dominant and both hands.
   The variance shows the same behavior as that of mean values. Once again, the 4th 
 block displays outlying behavior performance.
 
 #Data visualization
 
-Let's visualize the dataset using boxplots.
+Let's visualize the dataset using boxplots and interaction plots.
 
 
 
@@ -125,8 +125,8 @@ ggplot(data = hit_data) +
 ```
 
 
-According to the boxplot visualization we can speculate, that 
-mean values are significantly different for the "DIAMETER"" variable. 
+According to the boxplot visualization we can speculate, if 
+mean values are significantly different for the "DIAMETER" variable. 
 
 # Interaction plots
 
@@ -166,10 +166,10 @@ ggplot(data = hit_data) +
   ylab("Hits Count")
 ```
  Interaction plots 1 and 3 display, that the 4th block (operator) is different from 
- the rest. Others show similar ring hits count. This can possibly be caused by 
+ the rest. Others show similar circle hits count. This can possibly be caused by 
  the effect of noise.
- Interection plot 2 displays the dependence of the ring hits count on the "HAND" 
- and "DIAMETER" variables, e.g. hits count to the ring of diameter 5 cm for 
+ Interection plot 2 displays the dependence of the circle hits count on the "HAND" 
+ and "DIAMETER" variables, e.g. hits count to the circle of diameter 5 cm for 
  the dominant hand is the largest.
  
  
@@ -186,7 +186,7 @@ hits_aov <- aov(HITS_SUM ~ HAND + DIAMETER, data = hit_data)
 summary(hits_aov)
 ```
  Variables "HAND" and "DIAMETER" are still significant even without dependence of
- the ring hits on the blocks (operators). 
+ the circle hits on the blocks (operators). 
  That enables us to reject the hypothesis about the equality of mean values.
 
 # Residuals
@@ -280,11 +280,17 @@ Once again, we observe significant difference between the 4th block (operator)
  Both tests have confirmed, that the performance of the dominant hand is 
  significantly different from other variants.
 
- Tukey's HSD test and Fisher's LSD test indicate, that rings with diameters 3 cm and 
- 5 cm are significantly similar. On the other hand, the ring with diameter of 1 cm
+ Tukey's HSD test and Fisher's LSD test indicate, that circles with diameters 3 cm and 
+ 5 cm are significantly similar. On the other hand, the circle with diameter of 1 cm
  is significantly different from two other ones.
  
 #Linear Regression
+
+We fit a linear model without intercept, where we consider the variable "DIAMETER" and the variable "HAND":
+
+
+$\:\:\:\:\:\:\:\:\:\mathbb{E}(HITS\_SUM|DIAMETER,HAND)=\beta_1{DIAMETER}+\beta_2{HAND}$.
+
  
 ```{r, echo=FALSE}
 lm_data <- hit_data
@@ -298,6 +304,13 @@ opar <- par(mfrow=c(2,2),cex=.8)
 plot(lm_circle_1)
 par(opar)
 ```
+
+
+
+We fit another linear model, where we consider the variable "DIAMETER" set to the power of 2 and the variable "HAND":
+
+
+$\:\:\:\:\:\:\:\:\:\mathbb{E}(HITS\_SUM|DIAMETER,HAND)=\beta_1{(DIAMETER^2)}+\beta_2{HAND}$.
 
 ```{r, echo=FALSE}
 lm_circle_2 <- lm(HITS_SUM ~ -1 + I(DIAMETER^2) + HAND, data = lm_data)
@@ -318,7 +331,7 @@ shapiro.test(lm_circle_2$residuals)
 
  As Q-Q plots and Shapiro-Wilk test indicate, general assumptions for 
  performing the linear regression task are met. 
- According to the R-squared statistic, the model with the ring diameter 
+ According to the R-squared statistic, the model with the circle diameter 
  set to the power of 2 explains the hit data slightly worse. However,
  the difference is negligible. As a result, we choose the first model.
 
