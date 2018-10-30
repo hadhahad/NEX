@@ -1,7 +1,7 @@
 ---
-title: "Homework Assignment 01"
+title: "NEX: Homework Assignment 01"
 author: "Belov, Neoral, Sahan, Shulga"
-date: "25.10.2018"
+date: "October 30, 2018"
 output: pdf_document
 ---
 
@@ -28,11 +28,11 @@ hit_data <- loadExperimentData("./data/experiment_data.csv",
 ```
 
 #Data
-In this assigment we use a data set "experiment_data". The data give number of dots (number of hits) inside circles with different diameters that a testee was able to draw during 10 seconds. The data were collected from the results of four students. The data set consisting of 36 observations of 4 variables.
+In this assigment we use a data set "experiment_data". The data contain the total number of dots (number of hits) inside circles with different diameters which different testees (operators) were able to put in during the time interval of 10 seconds. The data were collected from the results of four students. The dataset consists of 36 observations of 4 variables.
 
-* BLOCK - a testee;
+* BLOCK - testees (operators);
 * HITS_SUM - total number of hits;
-* DIAMETER - the diameter of the circle in cm, a categorical variable with three levels "1", "3", "5";
+* DIAMETER - the diameter of the circle in [cm], a categorical variable with three levels "1", "3", "5";
 * HAND - the hand or hands used to perform the experiment, a categorical variable with three levels, "D" - dominant hand, "N" - non-dominant hand , "B" - both hands;
 
 The goal is to study the influence of a circle size and hand/hands used to perform the experiment on a number of hits. 
@@ -45,7 +45,6 @@ summary(hit_data)
 ```
 
 The following tables provide the mean values and variances for each variable.
-
 
 ```{r means, echo = FALSE, include=FALSE}
 means_block <- tapply(hit_data$HITS_SUM, hit_data$BLOCK, mean)
@@ -72,8 +71,6 @@ means_diameter
 | variance | 5.42 | 20.97 | 52.63 | 
 
 
-
-
 ```{r var, echo = FALSE, include=FALSE}
 var_block <- tapply(hit_data$HITS_SUM, hit_data$BLOCK, var)
 var_hand <- tapply(hit_data$HITS_SUM, hit_data$HAND, var)
@@ -90,16 +87,15 @@ var_diameter
 made by the dominant hand is noticeably larger than that of 
  the non-dominant and both hands.
   The variance shows the same behavior as that of mean values. Once again, the 4th 
-block displays outlying behavior performance.
+block displays outlying performance.
 
 #Data visualization
 
 Let's visualize the dataset using boxplots and interaction plots.
 
+## Boxplots:
 
-
-
-```{r boxplot, echo = FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 ggplot(data = hit_data) +
   geom_boxplot(mapping = aes(x = BLOCK, y = HITS_SUM), color = "royalblue3") +
   labs(title = "Boxplot with Respect to Blocks") + 
@@ -107,7 +103,7 @@ ggplot(data = hit_data) +
   ylab("Hit Count")
 ```
 
-```{r, echo=FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 ggplot(data = hit_data) +
   geom_boxplot(mapping = aes(x = HAND, y = HITS_SUM), color = "maroon3") +
   labs(title = "Boxplot with Respect to Hand") + 
@@ -115,7 +111,7 @@ ggplot(data = hit_data) +
   ylab("Hit Count")
 ```
 
-```{r, echo=FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 ggplot(data = hit_data) +
   geom_boxplot(mapping = aes(x = DIAMETER, y = HITS_SUM), color = "turquoise3") +
   labs(title = "Boxplot with Respect to Circle Diameter") + 
@@ -124,16 +120,12 @@ ggplot(data = hit_data) +
 
 ```
 
+According to the boxplot visualization we can speculate, that 
+mean values are significantly different for the "DIAMETER" variable. On the other hand, for 'HAND' and 'BLOCK' variables differences are not clear - relevant statistical tests have to be performed. 
 
-According to the boxplot visualization we can speculate, if 
-mean values are significantly different for the "DIAMETER" variable. 
+## Interaction plots:
 
-# Interaction plots
-
-
-
-
-```{r int, echo = FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 ggplot(data = hit_data) +
   aes(x = BLOCK, color = DIAMETER, group = DIAMETER, y = HITS_SUM) +
   stat_summary(fun.y = mean, geom = "point") +
@@ -144,7 +136,7 @@ ggplot(data = hit_data) +
   ylab("Hits Count")
 ```
 
-```{r , echo = FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 ggplot(data = hit_data) +
   aes(x = HAND, color = DIAMETER, group = DIAMETER, y = HITS_SUM) +
   stat_summary(fun.y = mean, geom = "point") +
@@ -155,7 +147,7 @@ ggplot(data = hit_data) +
   ylab("Hits Count")
 ```
 
-```{r, echo = FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 ggplot(data = hit_data) +
   aes(x = HAND, color = BLOCK, group = BLOCK, y = HITS_SUM) +
   stat_summary(fun.y = mean, geom = "point") +
@@ -165,15 +157,16 @@ ggplot(data = hit_data) +
   xlab("Hand, [factor]") +
   ylab("Hits Count")
 ```
- Interaction plots 1 and 3 display, that the 4th block (operator) is different from 
- the rest. Others show similar circle hits count. This can possibly be caused by 
- the effect of noise.
- Interection plot 2 displays the dependence of the circle hits count on the "HAND" 
- and "DIAMETER" variables, e.g. hits count to the circle of diameter 5 cm for 
- the dominant hand is the largest.
+ 
+Interaction plots 1 and 3 display, that the 4th block (operator) is different from 
+the rest. Others show similar circle hits count. This can possibly be caused by 
+the effect of noise.
+Interection plot 2 displays the dependence of the circle hits count on the "HAND" 
+and "DIAMETER" variables, e.g. hits count to the circle of diameter 5 cm for 
+the dominant hand is the largest.
  
  
-#ANOVA without interactions 
+#ANOVA 
 ```{r anova, echo = FALSE}
 hits_aov_all <- aov(HITS_SUM ~ BLOCK + HAND + DIAMETER, data = hit_data)
 summary(hits_aov_all)
@@ -195,8 +188,8 @@ residuals_aov_all <- residuals(hits_aov_all)
 residuals_aov <- residuals(hits_aov)
 ```
 
-# Q-Q plot for residuals
-```{r, echo = FALSE}
+## Q-Q plot for residuals
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 params_all <- as.list(MASS::fitdistr(residuals_aov_all, "normal")$estimate)
 params <- as.list(MASS::fitdistr(residuals_aov, "normal")$estimate)
 ggplot(as.data.frame(residuals_aov_all), aes(sample = residuals_aov_all)) +
@@ -207,28 +200,29 @@ ggplot(as.data.frame(residuals_aov_all), aes(sample = residuals_aov_all)) +
   ylab("Sample Quantiles")
 ```
 
-```{r, echo=FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 params <- as.list(MASS::fitdistr(residuals_aov, "normal")$estimate)
 ggplot(as.data.frame(residuals_aov), aes(sample = residuals_aov)) +
   stat_qq(distribution = qnorm, dparams = params) +
   stat_qq_line(distribution = qnorm, dparams = params) + 
-  labs(title = "Residuals Normal Q-Q Plot") +
+  labs(title = "Residuals Normal Q-Q Plot witout 'BLOCK'") +
   xlab("Theoretical Quantiles") + 
   ylab("Sample Quantiles")
 ```
 
 Q-Q plots lines fit the data in an acceptable way. However, a few values display 
-outlying behavior. Normality tests must be carries out. We perform Shapiro-Wilk test.
+outlying behavior. Normality tests must be carried out. We perform Shapiro-Wilk test.
 The following is the result of the test. 
 
-
+###Shapiro-Wilk normality test for residuals from the model with all variables and from the model without 'BLOCK' variable, respectively:
 ```{r, echo = FALSE}
 shapiro.test(residuals_aov_all)
 shapiro.test(residuals_aov)
 ```
 
- As p-values from the Shapiro-Wilk test are close to the set significance level (5%), we will also perform the Lilliefors test of normality.
- 
+As p-values from the Shapiro-Wilk test are close to the set significance level (5%), we will also perform the Lilliefors test of normality.
+
+###Lilliefors normality test for residuals from the model with all variables and from the model without 'BLOCK' variable, respectively:
 ```{r, echo = FALSE}
 lillie.test(residuals_aov_all)
 lillie.test(residuals_aov)
@@ -238,51 +232,62 @@ lillie.test(residuals_aov)
 As a result of the test, we cannot reject the residuals normality hypothesis for both models.
 
 
-##Fisher's LSD-test.
+#Analysis of Factor Variables
 
 ```{r, echo = FALSE}
 lsd_all_hand <- LSD.test(hit_data$HITS_SUM, hit_data$HAND, DFerror = 28, 11.1)
-lsd_all_hand
-```
-
-
-
-```{r, echo = FALSE}
 lsd_all_block <- LSD.test(hit_data$HITS_SUM, hit_data$BLOCK, DFerror = 28, 11.1)
-lsd_all_block
-```
-
-
-```{r, echo = FALSE}
 lsd_all_diameter <- LSD.test(hit_data$HITS_SUM, hit_data$DIAMETER, DFerror = 28, 11.1)
-lsd_all_diameter
+hsd_all <- TukeyHSD(hits_aov_all)
 ```
 
+##Variable 'HAND'
 
-
-
-##Tukey's HSD-test.
-
-
-
+###Fisher's LSD-test:
 ```{r, echo = FALSE}
-hsd_all_hand <- TukeyHSD(hits_aov_all)
+lsd_all_hand$means
+lsd_all_hand$groups
 ```
 
+###Tukey's HSD-test:
 ```{r, echo = FALSE}
-hsd_all_hand
+hsd_all$HAND
+```
+
+Both tests have confirmed, that the performance of the dominant hand is 
+significantly different from other variants.
+
+##Variable 'BLOCK'
+
+###Fisher's LSD-test:
+```{r, echo = FALSE}
+lsd_all_block$means
+lsd_all_block$groups
+```
+
+###Tukey's HSD-test:
+```{r, echo = FALSE}
+hsd_all$BLOCK
 ```
 
 Once again, we observe significant difference between the 4th block (operator)
- and 3 other blocks. An interesting observation is that the 3rd block is 
- on the edge of being significantly similar to the 4th one.
+and 3 other blocks. An interesting observation is that the 3rd block is 
+on the edge of being significantly similar to the 4th one.
 
- Both tests have confirmed, that the performance of the dominant hand is 
- significantly different from other variants.
+##Variable 'DIAMETER'
 
- Tukey's HSD test and Fisher's LSD test indicate, that circles with diameters 3 cm and 
- 5 cm are significantly similar. On the other hand, the circle with diameter of 1 cm
- is significantly different from two other ones.
+###Fisher's LSD-test:
+```{r, echo = FALSE}
+lsd_all_diameter$means
+lsd_all_diameter$groups
+```
+
+###Tukey's HSD-test:
+```{r, echo = FALSE}
+hsd_all$DIAMETER
+```
+
+Tukey's HSD test and Fisher's LSD test indicate, that circles with diameters 3 cm and 5 cm are significantly similar. On the other hand, the circle with diameter of 1 cm is significantly different from two other ones.
  
 #Linear Regression
 
@@ -297,7 +302,7 @@ lm_data <- hit_data
 lm_data$DIAMETER <- as.numeric(lm_data$DIAMETER)
 ```
 
-```{r, echo=FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 lm_circle_1 <- lm(HITS_SUM ~ -1 + DIAMETER + HAND, data = lm_data)
 summary(lm_circle_1)
 opar <- par(mfrow=c(2,2),cex=.8)
@@ -312,7 +317,7 @@ We fit another linear model, where we consider the variable "DIAMETER" set to th
 
 $\:\:\:\:\:\:\:\:\:\mathbb{E}(HITS\_SUM|DIAMETER,HAND)=\beta_1{(DIAMETER^2)}+\beta_2{HAND}$.
 
-```{r, echo=FALSE}
+```{r fig.width=6, fig.height=4, fig.align='center', echo=FALSE}
 lm_circle_2 <- lm(HITS_SUM ~ -1 + I(DIAMETER^2) + HAND, data = lm_data)
 summary(lm_circle_2)
 opar <- par(mfrow=c(2,2),cex=.8)

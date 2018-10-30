@@ -187,17 +187,22 @@ lillie.test(residuals_aov)
 
 # Fisher's LSD-test
 lsd_all_hand <- LSD.test(hit_data$HITS_SUM, hit_data$HAND, DFerror = 28, 11.1)
-lsd_all_hand
+lsd_all_hand$means
+lsd_all_hand$groups
 
 lsd_all_block <- LSD.test(hit_data$HITS_SUM, hit_data$BLOCK, DFerror = 28, 11.1)
-lsd_all_block
+lsd_all_block$means
+lsd_all_block$groups
 
 lsd_all_diameter <- LSD.test(hit_data$HITS_SUM, hit_data$DIAMETER, DFerror = 28, 11.1)
-lsd_all_diameter
+lsd_all_diameter$means
+lsd_all_diameter$groups
 
 # Tukey's HSD-test
-hsd_all_hand <- TukeyHSD(hits_aov_all)
-hsd_all_hand
+hsd_all <- TukeyHSD(hits_aov_all)
+hsd_all$HAND
+hsd_all$BLOCK
+hsd_all$DIAMETER
 
 # Once again we observe significant difference between the 4th block (operator)
 # and 3 other blocks. An interesting observation is that the 3rd block is 
