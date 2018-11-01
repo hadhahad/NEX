@@ -176,7 +176,7 @@ interaction.plot(Gap.num,Power.num,etch,type="b",pch=19, fixed=T,xlab="Gap in cm
 
 k = 3
 # FrF2 specifies the number of runs in the fractional factorial design 
-plan <-  FrF2(2^k, k, replications = 2, randomize = T,factor.names = c("Gap", "Flow", "Power"))
+plan <-  FrF2(2^k, k, replications = 2, randomize = F,factor.names = c("Gap", "Flow", "Power"))
 #plan < - FrF2(2^k, k, default.levels = c("low", "high"), factor.names = c("Factor A", "Factor B", "Factor C"))
 plan <- add.response(plan, etch)
 MEPlot(plan)
