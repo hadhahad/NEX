@@ -16,7 +16,7 @@ library(DoE.base)      # Full factorials, orthogonal arrays and base utilities f
 library(geoR)
 library(qualityTools)  # need for wirePlot, contourPlot
 # for opening xls files: library(gdata) library(XLConnect) library(xlsReadWrite)
-setwd("D:/Vyuka/NEX/2017/06_2k_factorial_design/")
+# setwd("D:/Vyuka/NEX/2017/06_2k_factorial_design/")
 
 
 ##############################################################################
@@ -103,6 +103,7 @@ anova(aov(Filtration~A*C*D, data=rate))
 model_start_step <- lm(Filtration~(.)^2, data=rate)
 summary(model_start_step)
 model_final_step <- step(model_start_step)
+
 summary(model_final_step)
 
 # final model
