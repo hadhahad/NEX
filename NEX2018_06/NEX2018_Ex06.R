@@ -27,4 +27,46 @@ MEPlot(exp)
 # Interaction Plot matrix for response variable
 IAPlot(exp)
 
-# Anova
+# Anova 0
+anova(aov(data.Weight~A*B*C*D,  data=exp))
+model0 = lm(data.Weight~A*B*C*D,  data=exp)
+summary(model0)
+
+# Daniel plot 
+DanielPlot(exp,code=TRUE)
+
+# Anova 1
+anova(aov(data.Weight~A+C+A:B,  data=exp))
+model1 = lm(data.Weight ~ A:B + A + B + C,  data=exp)
+summary(model1)
+
+# Get numeric variables
+A.num <- as.numeric(data$Temperature)
+B.num <- as.numeric(data$Concentration)
+C.num <- as.numeric(data$Time)
+
+# Construct the linear model
+weight.lm <- lm(data.Weight ~ A.num:B.num + A.num + C.num, data=exp)
+summary(weight.lm)
+
+# Fit
+new.data <- t(rbind(seq(100, 120, length.out = 10), 
+                     seq(4, 8, length.out = 10),
+                     C.num = seq(20, 30, length.out = 10)), 
+              data)
+colnames(new.data) <- c("A.num", "B.num", "C.num")
+new.data <- as.data.frame(new.data)
+new.data <- expand.grid(new.data)
+new.data$fit  <- predict(weight.lm, new.data)
+
+# Countour plots - only 2 variables in the model
+contourplot(fit~A.num*C.num,new.data,xlab="A Temperature",ylab="C Concentration", main = "Contour plot of Filtration Rate from the Pilot Plant Experiment")
+contourplot(fit~C.num*D.num,new.data,xlab="C Concentration",ylab="D Stiring Rate", main = "Contour plot of Filtration Rate from the Pilot Plant Experiment")
+contourplot(fit~A.num*D.num,new.data,xlab="A Temperature",ylab="D Stiring Rate", main = "Contour plot of Filtration Rate from the Pilot Plant Experiment")
+
+# Countour plots - all 3 varaibles + interactions in the model
+par(mfrow = c(2,2))
+wirePlot(A, C, Filtration_qt, data = rate_qt,form = "Filtration_qt~A*C+A*D")
+contourPlot(A, C, Filtration_qt, data = rate_qt,form = "Filtration_qt~A*C+A*D")
+contourPlot(C, D, Filtration_qt, data = rate_qt,form = "Filtration_qt~A*C+A*D")
+contourPlot(A, D, Filtration_qt, data = rate_qt,form = "Filtration_qt~A*C+A*D")
