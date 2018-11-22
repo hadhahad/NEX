@@ -1,0 +1,93 @@
+---
+title: "NEX2018 - Homework 2: Throwing problem"
+author: "Jiri Franc"
+date: "22 listopadu 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Assignment 
+
+Navrhnete experiment hodu "naplnenym balonkem", ktery zkouma zavislost na 6 faktorech. Predpokladejte, ze vzhledem k omezenym casovym moznostem jste nuceni pouzit $\frac{1}{2}$ fraction design: $2^{6-1}$ popripade $\frac{1}{4}$ fraction design: $2^{6-1}$.
+
+Odezva je vzdalenost nejvzdalnenjsi casti balonku od cary v milimetrech (absolutni hodnota).
+
+## Zkoumane faktory jsou:
+
+ 1)  .. hmotnost:   mala 50 g    x velka 100g 
+ 2)  .. vzdalenost: mala 3 m    X velka 5m
+ 3)  .. plneni:     kroupy      x mouka
+ 4)  .. ruka:       dominantni  x nedominantni
+ 5)  .. pohled:     vidome      x nevidome
+ 6)  .. stoj:       volny       x na jedne noze
+
+## Pozn k mereni
+
+Pri hodu se zavrenyma ocima, nejdrive zavrete oci, otocte se o 365° dokola a teprve pote hodte at ma tento parametr vliv.
+
+U jakehodvou faktoru ocekavate, ze nebude mit vliv na vysledek? (hmotnost a vzdalenost neuvazujte - ty jsou dopredu oznaceny jako stezejni). Usporadejte si faktory tak, aby v pripade potvrzeni vaseho  predpokladu jste obdrzeli vyseldny design s Resolution IV.
+
+Pokud je vas ve skupine vice, blokujte.  Kazdy z vas provede min. 8 mereni. Pro operatory vytvorte ortogonalni bloky.
+Pokud je vas ve skupine pocet neodpovidajici 42^k$, merte vsichni to same a berte bloky jako replikace.
+
+### Dodatecne mereni
+
+Je podezreni, ze vliv "vzdalenosti" a "velikosti" neni linearni. Domerte "center pointy" - urcete vzdalenost a hmotnost jako stred mezi vysokou a nizkou urovni a analyzujte tento  design. V pripade casove tisne predpokladejte, ze vami vybrane promenne, podle kterych jste navrhli generatory, jsou skutecne nevyznamne.
+
+
+## Navrhnete experiment a odpovezte na nasledujici otazky
+
+ 0) Rozhodnete jak stanovite nizkou uroven u vzdalenosti a hmotnosti
+
+ 1) Jake jsou pouzite generatory v navrhu a proc jste zvolili prave je?
+    Jaka je "trida" - resultion a "zastupna struktura" alias structure pro dany navrh?
+    Pokud mate vice operatoru, je efekt tohoto nuinsance faktoru v zastoupeni s nejkaym efektem co nas zajima? 
+    Jake je alternativni deleni? (alternativni generatory)?
+
+ 2) Spoctete jednotlive efekty (uvedte vcetne zastupne struktury)
+
+ 3) zjistete jake faktory a jejich interakce se jevi signifikantni (pouzijete daniel a pareto plot)
+    Vytvorte main effects plot, interaction plot, boxploty
+    Co se da z danych obrazku vyvodit? Radne okomentujte.
+
+ 4) Provedte analyzu rozptylu a validujte vysledny model (bez dodatecnych mereni)
+
+ 5)  Pouzijte dodatecne predpoklady a dodatecne mereni ve stredech, 
+     a vyvratte, nebo potvrdte linearni zavislost odezvy na vzdalenosti a prumeru.
+
+ 6)  Vytvorte regresni model, kde prevedete vzdalenost a prumer z kodovych do numerickych hodnot 
+    (ostatni promenne pouzijte dle jejich vyznamnosti)
+
+  7)  Vykreslete contour plot pro prumer a vzdalenost a naleznete optimalni hodnoty v rozmezi 
+    (vzdalenost 2m-6m a hmotosti 40g - 110g)
+
+
+## Odevzdani
+
+Vypracovany report ve formatu pdf, prislusny Rmarkdown Rmd soubor s kodem a namerena data zaslete do 9.12.2017 ve formatu HW2_2017_Jmeno1_Jmeno2_Jmeno3.PDF (R, csv)
+
+
+
+```{r, echo=FALSE}
+#Instalation of required libraries
+library(car)        
+library(lattice)    
+library(MASS)
+library(scatterplot3d)
+library(FrF2)           
+
+k=7
+n_rep=1
+n_oper=2
+
+designHW          <-  FrF2(2^(k-2), k, replications = n_rep, randomize = T, seed = c(42),
+                            factor.names = LETTERS[1:k])
+#summary(designHW)
+designHW <- add.response(designHW,c(1:32))
+```
+ Summary
+
+Have a fun ;)
