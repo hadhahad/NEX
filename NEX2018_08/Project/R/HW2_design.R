@@ -22,6 +22,21 @@ design_4 <- FrF2(2^(k-2), k, replications = 1,
                  randomize = TRUE, generators = c("-ABC","-BCD") ,
                  factor.names = c("A", "B", "C", "D", "E", "F"))
 
+# Designs for center points
+
+k <- 4
+
+set.seed(1234)
+cent_design_1 <- FrF2(2^(k-1), k, replications = 1, 
+                      randomize = TRUE, generators = c("ABC") ,
+                      factor.names = c("A", "B", "C", "D"))
+
+set.seed(1234)
+cent_design_2 <- FrF2(2^(k-1), k, replications = 1, 
+                      randomize = TRUE, generators = c("-ABC") ,
+                      factor.names = c("A", "B", "C", "D"))
+
+
 # An equivalent using blocks instead of generators
 # k <- 6
 # design <- FrF2(2^(k), k, replications = 1, blocks = 4, 
@@ -29,4 +44,4 @@ design_4 <- FrF2(2^(k-2), k, replications = 1,
 #                factor.names = c("A", "B", "C", "D", "E", "F"))
 
 # Save the design in the csv format
-write.csv(design_4, file="NEX2018_08/Project/Data/design4.csv")
+write.csv(cent_design_2, file="NEX2018_08/Project/Data/cent_design2.csv")
