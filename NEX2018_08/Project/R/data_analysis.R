@@ -120,14 +120,14 @@ prefinal.aov <- aov(lm(measurement ~ distance + mass:distance:filling:stance +
                          hand:stance + vision:stance + distance:vision:stance + 
                          distance:filling:stance - 1, data = data_noncent))
 summary(prefinal.aov)
-
-final.aov <- aov(lm.default(formula = measurement ~ distance + 
-                              stance:vision - 1, data = data_noncent))
-summary(final.aov)
-
 #Final model
-final.aov <- aov(lm(measurement ~ distance + distance:filling:stance - 1, data = data_noncent))
+final.aov <- aov(lm.default(formula = measurement ~ distance + 
+                              distance:stance:vision - 1, data = data_noncent))
 summary(final.aov)
+
+# not Final model
+#final.aov <- aov(lm(measurement ~ distance + distance:filling:stance - 1, data = data_noncent))
+#summary(final.aov)
 
 ################################################
 #############    CENTER POINTS   ###############
