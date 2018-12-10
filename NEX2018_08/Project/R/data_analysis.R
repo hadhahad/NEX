@@ -2,7 +2,8 @@
 rm(list = ls())
 
 # Load libraries
-PACKAGES <- c('FrF2', 'lattice', 'pid', 'tidyverse', 'nortest')
+PACKAGES <- c('FrF2', 'lattice', 'pid', 
+              'tidyverse', 'nortest', 'lmtest', 'caret')
 lapply(PACKAGES, require, character.only = TRUE)
 rm(PACKAGES)
 
@@ -172,6 +173,7 @@ data_all_num <- data_all_num %>%
     distance = as.numeric(as.character(distance))
   )
 
+#The final linear model
 final.lm_num <- lm(measurement ~ mass + distance - 1, data = data_all_num)
 summary(final.lm_num)
 
@@ -179,9 +181,31 @@ summary(final.lm_num)
 lillie.test(residuals(final.lm_num))
 shapiro.test(residuals(final.lm_num))
 
+#Heteriscedasticity analysis
+bptest(final.lm_num)
+
+# Box-Cox transformation
+bc_transf <- BoxCoxTrans(data_all_num$measurement)
+data_all_num$measurement_bc <- predict(bc_transf, data_all_num$measurement)
+
 #Plotting summary of the linear regression model
 par(mfrow = c(2, 2))
 plot(final.lm_num)
+
+#The FINAL final linear model with Box-Cox transformation
+final_bc.lm_num <- lm(measurement_bc ~ mass + distance - 1, data = data_all_num)
+summary(final_bc.lm_num)
+
+# Once again normality tests of residuals
+lillie.test(residuals(final_bc.lm_num))
+shapiro.test(residuals(final_bc.lm_num))
+
+#Once again eteriscedasticity analysis
+bptest(final_bc.lm_num)
+
+#Plotting summary of the linear regression model
+par(mfrow = c(2, 2))
+plot(final_bc.lm_num)
 
 
 ################################################
