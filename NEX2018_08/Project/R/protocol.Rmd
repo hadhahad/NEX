@@ -33,7 +33,7 @@ rm(list = setdiff(ls(), c('data_noncent', 'data_center', 'data_all', lsf.str()))
 ```
 
 In this assigment we use data set that was collected from an experiment performed by FNSPE CTU students.
-The goal of this experiment was to investigate what factors can have possible effect on the students precision while throwing filled rubber balloons. To collect the data, four students were throwing ballons aiming to hit a line. The following factors were taken into consideration: the distance from a testee to the line, a balloon filler, a baloon mass, a hand used to throw a balloon, opened or closed eyes of a testee and testee stance. The dataset consists of 80 observations of 6 categorical variables and responce variable MEASUREMENT. All categorical variables have two levels.
+The goal of this experiment was to investigate what factors can have possible effect on the students precision while throwing filled rubber balloons. To collect the data, four students were throwing ballons aiming to hit a line. The following factors were taken into consideration: the distance from a testee to the line, a balloon filler, a baloon mass, a hand used to throw a balloon, opened or closed eyes of a testee and testee's stance. The dataset consists of 80 observations of 6 categorical variables and responce variable MEASUREMENT. All categorical variables have two levels.
 
 * MASS - a mass of a balloon, "-1" - 50g, "1" - 100g;
 * DISTANCE - a distance from the line, "-1" - 3m, "1" - 5m;
@@ -319,7 +319,7 @@ plot(final.lm_num)
 
 
 
-We run the Breusch-Pagan test to detect heteroskedasticity. The following is the result of the test. Based on the p-value we reject the null hypothesis of homoskedasticity and assume heteroskedasticity.
+We run the Breusch-Pagan test to detect heteroscedasticity. The following is the result of the test. Based on the p-value we reject the null hypothesis of homoscedasticity and assume heteroscedasticity.
 ```{r, echo=FALSE, include=TRUE}
 #Heteriscedasticity analysis
 bptest(final.lm_num)
@@ -343,7 +343,7 @@ final_bc.lm_num <- lm(measurement_bc ~ mass + distance - 1, data = data_all_num)
 summary(final_bc.lm_num)
 ```
 
-Once again, we perform Lilliefors test and Shapiro-Wilk test to test normality of residuals for the model with transformed response and the Breusch-Pagan test to check heteroskedasticity. Based on the p-values we can not reject the null hypothesis about the normality of the residuals and can not reject the homoskedasticity.
+Once again, we perform Lilliefors test and Shapiro-Wilk test to test normality of residuals for the model with transformed response and the Breusch-Pagan test to check heteroscedasticity. Based on the p-values we can not reject the null hypothesis about the normality of the residuals and can not reject the homoscedasticity.
 
 ```{r, echo=FALSE, include=TRUE}
 # Once again normality tests of residuals
