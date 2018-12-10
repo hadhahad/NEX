@@ -36,7 +36,7 @@ In this assigment we use data set that was collected from an experiment performe
 The goal of this experiment was to investigate what factors can have possible effect on the students precision while throwing filled rubber balloons. To collect the data, four students were throwing ballons aiming to hit a line. The following factors were taken into consideration: the distance from a testee to the line, a balloon filler, a baloon mass, a hand used to throw a balloon, opened or closed eyes of a testee and testee stance. The dataset consists of 80 observations of 6 categorical variables and responce variable MEASUREMENT. All categorical variables have two levels.
 
 * MASS - a mass of a balloon, "-1" - 50g, "1" - 100g;
-* DISTANCE - a distance from the line, "-1" - 3 m, "1" - 5 m;
+* DISTANCE - a distance from the line, "-1" - 3m, "1" - 5m;
 * FILLING - balloon filling, "-1" - grain, "1" - flour;
 * HAND - hand used to throw a balloon, "-1" - dominant, "1" - non-dominant;
 * VISION - "-1" - eyes of a testee were opened, "1" - eyes of a testee were closed;
@@ -92,12 +92,12 @@ data_noncent.aov_simple <- aov(measurement ~ ., data = data_noncent)
 summary(data_noncent.aov_simple)
 ```
 
-The average effect of a factor is defined as the change in response produced by a change in the level of that factor averaged over the levels of the other factors. Let's examine magnitudes and directions of the main effects to determine which factors are likely to be important. The main effects of all factors are plotted in Figure on page 4. The effects of MASS, DISTANCE, HAND and VISION are positive, this suggests that an increase of this factors from the low level to the high level increases the value of the response. The effects of FILLING and STANCE are negative, this suggests that an increase of this factors from the low level to the high level decreases the value of the response variable MEASURMENT. The main effect of all factors appear to be small relative to the main effect of DISTANCE.
+The average effect of a factor is defined as the change in response produced by a change in the level of that factor averaged over the levels of the other factors. Let's examine magnitudes and directions of the main effects to determine which factors are likely to be important. The main effects of all factors are plotted in Figure on page 4. The effects of MASS, DISTANCE, HAND and VISION are positive, this suggests that an increase of this factors from the low level to the high level increases the value of the response. The effects of FILLING and STANCE are negative, this suggests that an increase of this factors from the low level to the high level decreases the value of the response variable MEASUREMENT. The main effect of all factors appear to be small relative to the main effect of DISTANCE.
 
 
 #Interactions
 
-The two-factor interactions are plotted in Figures on pages 5-10. Looking at interaction plots for VISION we can note that there is almoust no effect of VISION when MASS is at the high level, while there is lange effect of VISION when MASS is at the low level; the effect of VISION is very large when HAND is at the high level ad very small when HAND is on the low level; the effect of VISION at the high level of STANCE is negative while it is positive at the low level of STANCE. If we look at the interaction plots for STANCE we can see that the effect of STANCE is bigger at the high level of MASS than at the low lever of MASS; the effect of STANCE is positive at the low level of HAND and negative at the high level of HAND and it shows same behaviour at levels of VISION.
+The two-factor interactions are plotted in Figures on pages 5-10. Looking at interaction plots for VISION we can note that there is almost no effect of VISION when MASS is at the high level, while there is large effect of VISION when MASS is at the low level; the effect of VISION is very large when HAND is at the high level ad very small when HAND is on the low level; the effect of VISION at the high level of STANCE is negative while it is positive at the low level of STANCE. If we look at the interaction plots for STANCE we can see that the effect of STANCE is bigger at the high level of MASS than at the low level of MASS; the effect of STANCE is positive at the low level of HAND and negative at the high level of HAND and it shows same behaviour at levels of VISION.
 It is important to notice, that the effect of DISTANCE is always positive at all levels of other factors.
 
 The normal probability plot of the effects is shown in Figure on page 11. All of the effects that lie along the line are negligible, the large effects are far from the line. The important effects that emerge from this analysis are those that are signed, for instance the effect of the distance, the effect of the interaction of mass, distance, filling, hand and stance. These effects are significant at the 5% significance level. 
@@ -229,7 +229,7 @@ summary(final.aov)
 
 #Center points
 
-The following picture is box plots of variables with center points. The box plot "Distance with Center Points" speaks in favour of a linear dependance between DISTANCE and MEASURMENT.
+The following picture is box plots of variables with center points. The box plot "Distance with Center Points" speaks in favour of a linear dependance between DISTANCE and MEASUREMENT.
 
 ```{r, echo=FALSE, include=FALSE}
 #Boxplots of variables with center points
@@ -274,7 +274,7 @@ summary(center.aov)
 
 We fit another linear model
 \begin{center}
-$\mathbb{E}(MEASURMENT|MASS,DISTANCE)=\beta_1{MASS}+\beta_2{DISTANCE}$,
+$\mathbb{E}(MEASUREMENT|MASS,DISTANCE)=\beta_1{MASS}+\beta_2{DISTANCE}$,
 \end{center}
  where we treat MASS and DISTANCE as numerical variables.
 
@@ -314,12 +314,17 @@ The following Figure provides residual plots for the model. Based on those plots
 par(mfrow = c(2, 2))
 plot(final.lm_num)
 ```
+
+
+
+
+
 We run the Breusch-Pagan test to detect heteroskedasticity. The following is the result of the test. Based on the p-value we reject the null hypothesis of homoskedasticity and assume heteroskedasticity.
 ```{r, echo=FALSE, include=TRUE}
 #Heteriscedasticity analysis
 bptest(final.lm_num)
 ```
-We considere the Box-Cox transformation to possibly improve the model. The following Figure provides residual plots for the transformed model.
+We consider the Box-Cox transformation to possibly improve the model. The following Figure provides residual plots for the transformed model.
 
 ```{r, echo=FALSE, include=FALSE}
 
@@ -330,12 +335,6 @@ data_all_num$measurement_bc <- predict(bc_transf, data_all_num$measurement)
 
 
 
-```{r, echo=FALSE, include=TRUE}
-#Plotting summary of the linear regression model
-par(mfrow = c(2, 2))
-plot(final.lm_num)
-```
-
 The summary of the model with transformed response variable:
 
 ```{r, echo=FALSE, include=TRUE}
@@ -344,7 +343,7 @@ final_bc.lm_num <- lm(measurement_bc ~ mass + distance - 1, data = data_all_num)
 summary(final_bc.lm_num)
 ```
 
-Once again, we performe Lilliefors test and Shapiro-Wilk test to test normality of residuals for the model with transformed response and the Breusch-Pagan test to check heteroskedasticity. Based on the p-values we can not reject the null hypothesis about the normality of the residuals and can not reject the homoskedasticity.
+Once again, we perform Lilliefors test and Shapiro-Wilk test to test normality of residuals for the model with transformed response and the Breusch-Pagan test to check heteroskedasticity. Based on the p-values we can not reject the null hypothesis about the normality of the residuals and can not reject the homoskedasticity.
 
 ```{r, echo=FALSE, include=TRUE}
 # Once again normality tests of residuals
