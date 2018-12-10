@@ -42,7 +42,7 @@ The goal of this experiment was to investigate what factors can have possible ef
 * STANCE - "-1" - a testee stood on two legs, "1" - a testee stood on one leg;
 * MEASUREMENT - a distance from a balloon to the line, measured from the furthest part of a ballon from the line, in mm.
 
-Last 16 observations very made with central poits for MASS and DISTANCE, i.e with balloons of the mass 75 g and the distance from the line equal to 4 m.
+Last 16 observations were made with central poits for MASS and DISTANCE, i.e with balloons of the mass 75 g and the distance from the line equal to 4 m.
 
 
 # Experiment design
@@ -179,6 +179,9 @@ paretoPlot(data_noncent.aov_allint)
 include_graphics("figures/daniel_all_inter.png")
 ```
 
+
+The following Pareto plot provides magnitudes of effects with their directions.
+
 ```{r, out.width = "100%", echo=FALSE}
 include_graphics("figures/pareto_plot_all_inter.png")
 ```
@@ -186,7 +189,7 @@ include_graphics("figures/pareto_plot_all_inter.png")
 
 # ANOVA   
 
-Let's create and investigate model with different interaction that were chosen with respect to the results of the analysis above. First we consider a linear model with all interactions that are significant according to normal plot on page 11. We perform the ANOVA test. The result of the test is that only DISTANCE significant. Also the interaction DISTANCE:STANCE:VISION is close to be significant, thus we include the interaction in the next model.
+Let's create and investigate model with different interaction that were chosen with respect to the results of the analysis above. First we consider a linear model with all interactions that are significant according to normal plot on page 11. We perform the ANOVA test. The result of the test is that only DISTANCE is significant. Also the interaction DISTANCE:STANCE:VISION is close to be significant, thus we include the interaction in the next model.
 
 
 
@@ -225,7 +228,7 @@ summary(final.aov)
 
 #Center points
 
-The following picture is box plots of variables with center points.
+The following picture is box plots of variables with center points. The box plot "Distance with Center Points" speaks in favour of a linear dependance between DISTANCE and MEASURMENT.
 
 ```{r, echo=FALSE, include=FALSE}
 #Boxplots of variables with center points
@@ -251,7 +254,7 @@ ggsave(
 include_graphics("figures/boxplot_center_points.png")
 ```
 
-We fit linear model of measurement that depends on mass and distance without intercept, following is the summary for the model and results of ANOVA test.
+We fit a linear model of measurement that depends on mass and distance without intercept, following is the summary for the model and results of ANOVA test.
 
 ```{r, , echo=FALSE, include=TRUE}
 #Linear model of measurement that depends on mass and distance
@@ -268,7 +271,11 @@ summary(center.aov)
 
 #Linear regression 
 
-We fit another linear model, where we treat variables MASS and DISTANCE as numerical.
+We fit another linear model
+\begin{center}
+$\mathbb{E}(MEASURMENT|MASS,DISTANCE)=\beta_1{MASS}+\beta_2{DISTANCE}$,
+\end{center}
+ where we treat MASS and DISTANCE as numerical variables.
 
 ```{r, echo=FALSE, include=FALSE}
 #Linear regression with mapping to numeric values
@@ -285,7 +292,11 @@ final.lm_num <- lm(measurement ~ mass + distance - 1, data = data_all_num)
 summary(final.lm_num)
 ```
 
-We run Lilliefors test and Shapiro-Wilk test to test normality of residuals.
+
+
+Let's run Lilliefors test and Shapiro-Wilk test to test normality of residuals.
+
+
 
 ```{r, echo=FALSE, include=TRUE}
 #Residual tests to test normality of residuals
@@ -293,6 +304,9 @@ lillie.test(residuals(final.lm_num))
 shapiro.test(residuals(final.lm_num))
 ```
  Based on the p-values we reject the null hypothesis about the normality of the residuals.
+ 
+ 
+The following Figure provides residual plots for the model. Based on those plots, we can talk about the adequacy of the model.
 
 ```{r, echo=FALSE, include=TRUE}
 #Plotting summary of the linear regression model
