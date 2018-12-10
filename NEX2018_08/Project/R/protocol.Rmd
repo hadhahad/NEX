@@ -7,7 +7,8 @@ output: pdf_document
 ```{r setup, include=FALSE}
 # Load libraries
 library(knitr)
-PACKAGES <- c('FrF2', 'lattice', 'pid', 'tidyverse', 'nortest')
+PACKAGES <- c('FrF2', 'lattice', 'pid', 
+              'tidyverse', 'nortest', 'lmtest', 'caret')
 lapply(PACKAGES, require, character.only = TRUE)
 rm(PACKAGES)
 # Set up the working directory
@@ -312,6 +313,55 @@ The following Figure provides residual plots for the model. Based on those plots
 #Plotting summary of the linear regression model
 par(mfrow = c(2, 2))
 plot(final.lm_num)
+```
+We run the Breusch-Pagan test to detect heteroskedasticity. The following is the result of the test. Based on the p-value we reject the null hypothesis of homoskedasticity and assume heteroskedasticity.
+```{r, echo=FALSE, include=TRUE}
+#Heteriscedasticity analysis
+bptest(final.lm_num)
+```
+We considere the Box-Cox transformation to possibly improve the model. The following Figure provides residual plots for the transformed model.
+
+```{r, echo=FALSE, include=FALSE}
+
+# Box-Cox transformation
+bc_transf <- BoxCoxTrans(data_all_num$measurement)
+data_all_num$measurement_bc <- predict(bc_transf, data_all_num$measurement)
+```
+
+
+
+```{r, echo=FALSE, include=TRUE}
+#Plotting summary of the linear regression model
+par(mfrow = c(2, 2))
+plot(final.lm_num)
+```
+
+The summary of the model with transformed response variable:
+
+```{r, echo=FALSE, include=TRUE}
+#The FINAL final linear model with Box-Cox transformation
+final_bc.lm_num <- lm(measurement_bc ~ mass + distance - 1, data = data_all_num)
+summary(final_bc.lm_num)
+```
+
+Once again, we performe Lilliefors test and Shapiro-Wilk test to test normality of residuals for the model with transformed response and the Breusch-Pagan test to check heteroskedasticity. Based on the p-values we can not reject the null hypothesis about the normality of the residuals and can not reject the homoskedasticity.
+
+```{r, echo=FALSE, include=TRUE}
+# Once again normality tests of residuals
+lillie.test(residuals(final_bc.lm_num))
+shapiro.test(residuals(final_bc.lm_num))
+```
+
+```{r, echo=FALSE, include=TRUE}
+#Once again eteriscedasticity analysis
+bptest(final_bc.lm_num)
+```
+The following Figure provides residual plots for the final model with transformed response varible.
+
+```{r, echo=FALSE, include=TRUE}
+#Plotting summary of the linear regression model
+par(mfrow = c(2, 2))
+plot(final_bc.lm_num)
 ```
 
 
