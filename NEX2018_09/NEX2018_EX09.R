@@ -2,13 +2,14 @@
 rm(list = ls())
 dev.off()
 
-# Load libraries 
-packages <- c('qualityTools', 'lattice', 'rsm')
-lapply(packages, require, character.only = TRUE)
-rm(packages)
+# Load and install libraries 
+packages <- c('rsm')
+install_idx <- which(lapply(packages, require, character.only = TRUE) == FALSE)
+lapply(packages[install_idx], install.packages, character.only = TRUE)
+rm(list = c('packages', 'install_idx'))
 
 # Set up the work directory
-setwd(paste0(getwd(), '/NEX2018_09'))
+# setwd(paste0(getwd(), '/NEX2018_09'))
 
 
 ################################################################################
@@ -48,7 +49,7 @@ summary(aov(model_2))
 
 
 ################################################################################
-###############        ANALYZING THE MAXIMUM YIELD         #####################
+#######        THE SECOND ORDER MODEL AND THE MAXIMUM YIELD         ############
 ################################################################################
 
 # Define the function to predict values on the grid
@@ -71,11 +72,11 @@ persp(x, y, z,
 
 # Contour plot
 image(x, y, z, 
-      axes=F, 
+      axes=FALSE, 
       xlab="X2^2", ylab="X3^2")
 contour(x, y, z, 
         levels = seq(60, 120, by = 5), 
-        add = T, col = "peru")
+        add = TRUE, col = "peru")
 axis(1, at = seq(min(x), max(x), by = 1))
 axis(2, at = seq(min(y), max(y), by = 1))
 box()
@@ -84,6 +85,11 @@ box()
 ## is obtained at the zero level for both variables X2 and X3.
 ## There was no information regarding the variable X1.
 ## Hence, we will compute the stationary point explicitly.
+
+
+################################################################################
+###############        ANALYZING THE MAXIMUM YIELD         #####################
+################################################################################
 
 # Coefficients of the full second order model
 model_1$coeff
@@ -98,3 +104,33 @@ B <- matrix(c(model_1$coeff[5],    model_1$coeff[8]/2, model_1$coeff[10]/2,
 # Then the stationary point is the following value
 x_stat  <- -1/2 * solve(B) %*% b
 print(x_stat)
+
+## We can also attempt to display it, however, the quality of the
+## contour plot may not be acceptable, as almost all variables and their 
+## interactions are not significant in the full model. 
+
+# Define the grid for the perspective plot and the contour plot
+x1.new <- seq(-1.75, 1.75, 0.1)
+x2.new <- seq(-1.75, 1.75, 0.1)
+x3.new <- seq(-1.75, 1.75, 0.1)
+
+# Define functions to calculate predictions on 2D grids
+vals_new <- function(x, y, z = x3.new, model = model_1) {
+  new_data <- data.frame(X1 = x, X2 = y, X3 = z)
+  return(predict(model, new_data))
+}
+
+# Compute predicted yield
+z.new = outer(x1.new, x2.new, vals_new)
+
+# Contour plot
+image(x1.new, x2.new, z.new, axes = FALSE)
+contour(x1.new, x2.new, z.new, 
+        levels = seq(60, max(120), by = 5), 
+        add = TRUE, col = "peru")
+points(x_stat[1], x_stat[2], pch = 19)
+text(x_stat[1] + 0.05, x_stat[2] + 0.05, 
+     "Stationary point", pos = 3.75, cex = 0.6)
+axis(1, at = seq(min(x1.new), max(x1.new), by = 0.5))
+axis(2, at = seq(min(x2.new), max(x2.new), by = 0.5))
+box()
