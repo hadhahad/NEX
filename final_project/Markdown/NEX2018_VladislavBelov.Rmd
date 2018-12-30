@@ -1,0 +1,66 @@
+---
+title: "Parameters Grid Search for Random Forest Classifier on Fall Detection Data"
+author: "Vladislav Belov"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+
+## Load libraries
+library(knitr)
+library(stringr)
+
+## Set up the working directory
+if (str_sub(getwd(), -8, -1) != 'Markdown') {
+  setwd(paste0(getwd(), '/final_project/Markdown'))
+}
+
+## Load source files 
+## Load the dataset
+fall_data <- read.csv('../Data/falldetection.csv', stringsAsFactors = FALSE)
+```
+
+# Project Overview
+
+This small project takes a look at the Fall Detection Data from China. The data 
+contains 6 variables: 
+
+* **TIME** - the total time of patient's monitoring;
+* **SL** - the level of sugar in the organism;
+* **EEG** - electroencephalography monitoring rate;
+* **BP** - blood pressure;
+* **HR** - heart beat rate;
+* **CIRCULATION** - blood circulation.
+
+The response variable **ACTIVITY** classifies the type of activity patients 
+were doing during the period of taking measurements of variables presented
+above:
+
+| **ACTIVITY** | Type of the Activity |
+| :-----: |:--------- | 
+| 0      | Standing |
+| 1      | Walking  |
+| 2      | Sitting  |
+| 3      | Falling  |
+| 4      | Cramps   |
+| 5      | Running  |
+
+Here is a quick look at the head of the dataset we will be dealing with (it 
+contains 16382 rows in total):
+
+```{r echo=FALSE, results='asis'}
+kable(fall_data[1:5, ], caption = "Fall Detection Data from China")
+```
+
+In this project we will use the Random Forest classifier to train the machine
+to classify activities according to basic inner body measurements. The 
+classifier will be trained on a pre-prepaired dataset, as it is going to be 
+cleaned and all of the explanatory variables will be normalized. There will be
+multiple training sessions depending on the initial parameters of the Random 
+Forest model. This set of parameters will be called the grid of parameters. 
+After each training session the prediction accuracy will be evaluated given 
+the fixed test set. Aforementioned procedures will provide us with a new dataset
+with the parameter grid as explanatory variables and model accuracy as the 
+response variable. We will analyze significance of parameters and their 
+interactions and look for the most efficient model given their range 
+which were used in the grid.
