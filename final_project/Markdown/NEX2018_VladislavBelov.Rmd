@@ -1,5 +1,5 @@
 ---
-title: "Parameters Grid Search for Random Forest Classifier on Fall Detection Data"
+title: "Parameter Grid Search for Random Forest Classifier on Fall Detection Data"
 author: "Vladislav Belov"
 output: pdf_document
 ---
@@ -55,12 +55,29 @@ kable(fall_data[1:5, ], caption = "Fall Detection Data from China")
 In this project we will use the Random Forest classifier to train the machine
 to classify activities according to basic inner body measurements. The 
 classifier will be trained on a pre-prepaired dataset, as it is going to be 
-cleaned and all of the explanatory variables will be normalized. There will be
-multiple training sessions depending on the initial parameters of the Random 
-Forest model. This set of parameters will be called the grid of parameters. 
-After each training session the prediction accuracy will be evaluated given 
-the fixed test set. Aforementioned procedures will provide us with a new dataset
-with the parameter grid as explanatory variables and model accuracy as the 
+cleaned and, moreover, all of the explanatory variables will be normalized. 
+
+There will be multiple training sessions depending on the initial parameters of 
+the Random Forest model. This set of parameters will be called the grid of
+parameters. After each training session the prediction accuracy will be 
+evaluated given the fixed test set. Aforementioned procedures will provide 
+us with a new dataset with the parameter grid as explanatory variables and 
+model accuracy as the 
 response variable. We will analyze significance of parameters and their 
 interactions and look for the most efficient model given their range 
 which were used in the grid.
+
+The grid of parameters we will be focusing on are the following ones:
+
+| **Parameter Name** | Description | Considered Values |
+| :----------------- |:--------------------------------- | --------------: |
+| `bootstrap` | whether bootstrap samples are used when building trees | |
+| `max_depth` | the maximum depth of the tree  | |
+| `max_features` | the number of features to consider when looking for the best split  | |
+| `min_samples_split` | the minimum number of samples required to split an internal node | |
+| `criterion` | the function to measure the quality of a split | |
+| `n_estimators` | the number of trees in the forest | |
+
+## Results of the Random Forest Classifier Training
+
+TBD
