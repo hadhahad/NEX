@@ -5,4 +5,5 @@
 *.Rproj
 NEX2018_00
 
-.Rproj.user
+.idea/
+__pycache__/
