@@ -14,7 +14,7 @@ loadData <- function(FILE, DEPENDENT_VARIABLE) {
   # Remove index column if present
   if ('X' %in% colnames(data)) {
     data <- data %>% 
-      select(-X)
+      dplyr::select(-X)
   }
 
   # Format factor variables
