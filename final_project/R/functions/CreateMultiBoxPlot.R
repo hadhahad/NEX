@@ -92,11 +92,6 @@ createMultiBoxPlot <- function(df, DEP_VAR, OUT_PATH, PLOT_NAME,
     ncol = 2
   )
 
-  # Draw the plot
-  if (PRINT_PLOT) {
-    print(plot_full)
-  }
-
   # Save the figure
   message("Saving the plot...")
   FINAL_PATH <- paste0(OUT_PATH, PLOT_NAME, ".png")
