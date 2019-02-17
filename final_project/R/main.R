@@ -5,7 +5,7 @@ if (is.null(dev.list()) == F) {
 }
 
 # Load packages
-PACKAGES <- c("FrF2", "agricolae", "nortest", "lmtest", "caret")
+PACKAGES <- c("FrF2", "agricolae", "nortest", "lmtest", "caret", "plotly")
 NEW_PACKAGES <- PACKAGES[!(PACKAGES %in% installed.packages()[, "Package"])]
 if (length(NEW_PACKAGES)) install.packages(NEW_PACKAGES)
 lapply(PACKAGES, require, character.only = TRUE)
@@ -58,9 +58,9 @@ df_mapped_all <- toFactor(rbind(df_mapped, df_mapped_center), DEP_VAR)
 
 if (FALSE) {
   createMultiBoxPlot(
-    df = toFactor(df, DEP_VAR), DEP_VAR = DEP_VAR,
+    df = df_mapped, DEP_VAR = DEP_VAR,
     OUT_PATH = paste0(PATH_GENERAL, PATH_OUTPUT),
-    PLOT_NAME = paste0("box_plot_all", FILE_NAME)
+    PLOT_NAME = paste0("box_plot_all_", FILE_NAME)
   )
 }
 
@@ -173,59 +173,53 @@ par(op)
 ###############               Linear Regression                  ###############
 ################################################################################
 
+# New data frame just not to mess with the main one
 df_fit <- df_all
 
-lm.numeric <- lm(accuracy ~ I(n_estimators^1) +
-  I(max_depth^1), data = df_fit)
+# Fitting the linear model
+lm.numeric_empirical <-
+  lm(log(accuracy) ~ I((n_estimators - median(n_estimators))^2) +
+    I((max_depth - median(max_depth))^3), data = df_fit)
+summary(lm.numeric_empirical)
+lm.numeric <-
+  lm(accuracy ~ poly(n_estimators, 1) +
+    poly(max_depth, 2), data = df_fit)
 summary(lm.numeric)
+
+# Plot of the linear model
 op <- par(mfrow = c(2, 2))
 plot(lm.numeric)
 par(op)
 
-#Residual tests to test normality of residuals
+# Residual tests to test normality of residuals
 lillie.test(residuals(lm.numeric))
 shapiro.test(residuals(lm.numeric))
 
 # Heteriscedasticity analysis
 bptest(lm.numeric)
 
-# Box-Cox transformation
-bc_transf <- BoxCoxTrans(df_fit$accuracy)
-df_fit$accuracy_bc <- predict(bc_transf, df_fit$accuracy)
+# Function to evaluate the fit function on the grid
+vals_xy <- function(x, y, model = lm.numeric) {
+  new_data <- data.frame("n_estimators" = x, "max_depth" = y)
+  return(predict(model, new_data))
+}
 
-# The FINAL final linear model with Box-Cox transformation
-final_bc.lm_num <- lm(accuracy_bc ~ I(n_estimators^1) +
-  I(max_depth^1), data = df_fit)
-summary(final_bc.lm_num)
-# Once again normality tests of residuals
-lillie.test(residuals(final_bc.lm_num))
-shapiro.test(residuals(final_bc.lm_num))
+# Set up the grid
+x <- seq(5, 505, length.out = 150)
+y <- seq(5, 45, length.out = 150)
+z <- outer(X = x, Y = y, FUN = vals_xy)
 
-#Once again eteriscedasticity analysis
-bptest(final_bc.lm_num)
-
-#Plotting summary of the linear regression model
-par(mfrow = c(2, 2))
-plot(final_bc.lm_num)
-
-
-# contourPlot(final.lm_num, N = 25)
-new_data <- data.frame(
-  'n_estimators'     = seq(5, 505, length.out = 200),
-  'max_depth' = seq(5, 45, length.out = 200)
-)
-
-# Creating data grid for predictions
-new_data <- expand.grid(new_data)
-predictions <- predict(lm.numeric, new_data)
-new_data$accuracy <- predictions
-
-# Plotting the contour plot
-contour_plot <- ggplot(new_data, aes(n_estimators, max_depth, z = accuracy)) + 
-  # geom_raster(aes(fill = accuracy)) +
-  geom_contour(colour = "red", binwidth = 100) +
-  labs(title = 'Contour Plot for n_estimators and max_depth',
-       fill = 'accuracy') +
-  xlab('n_estimators') +
-  ylab('max_depth')
-contour_plot
+# Plot via plotly
+p <- plot_ly(x = x, y = y, z = z) %>%
+  add_surface() %>%
+  add_markers(
+    x = df_fit$n_estimators,
+    y = df_fit$max_depth,
+    z = df_fit$accuracy, marker =
+      list(
+        color = df_fit$accuracy,
+        colorscale = c("#FFE1A1", "#683531"), showscale = FALSE
+      )
+  )
+chart_link <- api_create(p, filename = "surface-2")
+chart_link

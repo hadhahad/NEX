@@ -44,10 +44,10 @@ param_grid = {
 }
 
 center_param_grid = {
-    'n_estimators': [255],
-    'min_samples_split': [12],
+    'n_estimators': [450],
+    'min_samples_split': [4],
     'max_features': ['sqrt', 'log2'],
-    'max_depth': [25],
+    'max_depth': [30],
     'criterion': ['entropy', 'gini'],
     'bootstrap': [True, False]
 }
