@@ -1,0 +1,9 @@
+,n_estimators,min_samples_split,max_features,max_depth,criterion,bootstrap,accuracy
+0,255,12,sqrt,25,entropy,True,0.7647717971980356
+1,255,12,sqrt,25,entropy,False,0.7649123873521606
+2,255,12,sqrt,25,gini,True,0.7648559548530345
+3,255,12,sqrt,25,gini,False,0.7635025073332666
+4,255,12,log2,25,entropy,True,0.7639772172666686
+5,255,12,log2,25,entropy,False,0.7624088736143779
+6,255,12,log2,25,gini,True,0.7632867065516756
+7,255,12,log2,25,gini,False,0.7639013900374431

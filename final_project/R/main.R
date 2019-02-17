@@ -1,24 +1,29 @@
 # Clear the environment
 rm(list = ls())
-if (is.null(dev.list()) == F) { dev.off() }
+if (is.null(dev.list()) == F) {
+  dev.off()
+}
 
 # Load packages
-PACKAGES <- c("FrF2", "agricolae")
-NEW_PACKAGES <- PACKAGES[!(PACKAGES %in% installed.packages()[,"Package"])]
-if(length(NEW_PACKAGES)) install.packages(NEW_PACKAGES)
+PACKAGES <- c("FrF2", "agricolae", "nortest", "lmtest", "caret")
+NEW_PACKAGES <- PACKAGES[!(PACKAGES %in% installed.packages()[, "Package"])]
+if (length(NEW_PACKAGES)) install.packages(NEW_PACKAGES)
 lapply(PACKAGES, require, character.only = TRUE)
 rm(list = c("PACKAGES", "NEW_PACKAGES"))
 
-# Define paths
-PATH_GENERAL <- 'final_project/'
-PATH_FUNCTIONS <- 'R/functions/'
-PATH_DATA <- 'Data/'
-PATH_OUTPUT <- 'Output/'
+# Define paths with an assumption that the working directory
+# is one step above
+PATH_GENERAL <- "final_project/"
+PATH_FUNCTIONS <- "R/functions/"
+PATH_DATA <- "Data/"
+PATH_OUTPUT <- "Output/"
 
 # Load sources
 FUNCTIONS_LIST <- lapply(
-  c('DataPreparation.R', 'CreateMultiBoxPlot.R', 'MapValues.R',
-    'PlotAllInteractions.R', 'Pareto.R'), 
+  c(
+    "DataPreparation.R", "CreateMultiBoxPlot.R", "MapValues.R",
+    "PlotAllInteractions.R", "Pareto.R", "ToFactor.R"
+  ),
   function(x) paste0(PATH_GENERAL, PATH_FUNCTIONS, x)
 )
 lapply(FUNCTIONS_LIST, source)
@@ -29,12 +34,22 @@ rm(FUNCTIONS_LIST)
 ###############                   Data Loading                   ###############
 ################################################################################
 
-FILE_NAME <- 'design_df_3'
-DEP_VAR <- 'accuracy'
-df <- loadData(FILE = paste0(PATH_GENERAL, PATH_DATA, FILE_NAME, '.csv'), 
-               DEPENDENT_VARIABLE = DEP_VAR)
-df_mapped <- mapValues(df)
-VARS <- setdiff(colnames(df), DEP_VAR)
+FILE_NAME <- "design_df_3"
+DEP_VAR <- "accuracy"
+
+df <- loadData(
+  FILE = paste0(PATH_GENERAL, PATH_DATA, FILE_NAME, ".csv"),
+  DEPENDENT_VARIABLE = DEP_VAR
+)
+df_center <- loadData(
+  FILE = paste0(PATH_GENERAL, PATH_DATA, FILE_NAME, "_center", ".csv"),
+  DEPENDENT_VARIABLE = DEP_VAR
+)
+df_all <- rbind(df, df_center)
+
+df_mapped <- toFactor(mapValues(df), DEP_VAR)
+df_mapped_center <- toFactor(mapValues(df_center), DEP_VAR)
+df_mapped_all <- toFactor(rbind(df_mapped, df_mapped_center), DEP_VAR)
 
 
 ################################################################################
@@ -42,10 +57,11 @@ VARS <- setdiff(colnames(df), DEP_VAR)
 ################################################################################
 
 if (FALSE) {
-  createMultiBoxPlot(df = df, DEP_VAR = 'accuracy', 
-                     OUT_PATH = paste0(PATH_GENERAL, PATH_OUTPUT),
-                     PLOT_NAME = paste0("box_plot_all", FILE_NAME),
-                     PRINT_PLOT = FALSE)
+  createMultiBoxPlot(
+    df = toFactor(df, DEP_VAR), DEP_VAR = DEP_VAR,
+    OUT_PATH = paste0(PATH_GENERAL, PATH_OUTPUT),
+    PLOT_NAME = paste0("box_plot_all", FILE_NAME)
+  )
 }
 
 
@@ -71,8 +87,10 @@ main_effects <- MEPlot(aov_main.df_mapped)
 
 # Interaction plot
 if (FALSE) {
-  plotAllInteractions(df, RESPONSE_NAME = 'accuracy', 
-                      OUT_PATH = paste0(PATH_GENERAL, PATH_OUTPUT))
+  plotAllInteractions(df_mapped,
+    RESPONSE_NAME = DEP_VAR,
+    OUT_PATH = paste0(PATH_GENERAL, PATH_OUTPUT)
+  )
 }
 
 # Daniel plot for all interactions
@@ -83,7 +101,7 @@ aov_allint.df_mapped <- aov(
 )
 summary(aov_allint.df_mapped)
 dp_allint <- DanielPlot(aov_allint.df_mapped)
-qqplot(dp_allint$x, dp_allint$y) 
+qqplot(dp_allint$x, dp_allint$y)
 qqline(dp_allint$y)
 
 # Pareto plot for all interactions
@@ -93,7 +111,7 @@ pareto(dp_allint$x, names = dp_allint$effect)
 aov_doubleint.df_mapped <- aov(accuracy ~ (.)^2, data = df_mapped)
 summary(aov_doubleint.df_mapped)
 dp_doubleint <- DanielPlot(aov_doubleint.df_mapped)
-qqplot(dp_doubleint$x, dp_doubleint$y) 
+qqplot(dp_doubleint$x, dp_doubleint$y)
 qqline(dp_doubleint$y)
 
 # Pareto plot for double interactions
@@ -106,9 +124,9 @@ pareto(dp_doubleint$x, names = dp_doubleint$effect)
 
 # Final ANOVA according to previous interaction analysis
 aov_final.df_mapped <- aov(
-  accuracy ~ max_depth + n_estimators + min_samples_split:bootstrap + 
-    min_samples_split + n_estimators:bootstrap + criterion + 
-    min_samples_split:max_depth + n_estimators:min_samples_split + 
+  accuracy ~ max_depth + n_estimators + min_samples_split:bootstrap +
+    min_samples_split + n_estimators:bootstrap + criterion +
+    min_samples_split:max_depth + n_estimators:min_samples_split +
     max_depth:criterion,
   data = df_mapped
 )
@@ -118,3 +136,96 @@ summary(aov_final.df_mapped)
 ################################################################################
 ###############                  Center Points                   ###############
 ################################################################################
+
+# Box plot visualization of center points
+if (FALSE) {
+  createMultiBoxPlot(
+    df = df_mapped_all[, c(
+      "n_estimators",
+      "min_samples_split",
+      "max_depth",
+      DEP_VAR
+    )],
+    DEP_VAR = DEP_VAR,
+    OUT_PATH = paste0(PATH_GENERAL, PATH_OUTPUT),
+    PLOT_NAME = paste0("box_plot_center_", FILE_NAME)
+  )
+}
+
+# Create a design table with center points
+# df_design <- FrF2(64, 6,
+#                   factor.names = rev(setdiff(colnames(df_mapped), DEP_VAR)),
+#                   randomize = FALSE)
+# df_design <- add.center(df_design, 8)
+# df_design <- add.response(df_design, df_all$accuracy)
+# names(df_design)[length(colnames(df_design))] <- DEP_VAR
+
+lm.center <- lm(accuracy ~ I(n_estimators^1) +
+  I(min_samples_split^1) +
+  I(max_depth^1), data = df_all)
+summary(lm.center)
+op <- par(mfrow = c(2, 2))
+plot(lm.center)
+par(op)
+
+
+################################################################################
+###############               Linear Regression                  ###############
+################################################################################
+
+df_fit <- df_all
+
+lm.numeric <- lm(accuracy ~ I(n_estimators^1) +
+  I(max_depth^1), data = df_fit)
+summary(lm.numeric)
+op <- par(mfrow = c(2, 2))
+plot(lm.numeric)
+par(op)
+
+#Residual tests to test normality of residuals
+lillie.test(residuals(lm.numeric))
+shapiro.test(residuals(lm.numeric))
+
+# Heteriscedasticity analysis
+bptest(lm.numeric)
+
+# Box-Cox transformation
+bc_transf <- BoxCoxTrans(df_fit$accuracy)
+df_fit$accuracy_bc <- predict(bc_transf, df_fit$accuracy)
+
+# The FINAL final linear model with Box-Cox transformation
+final_bc.lm_num <- lm(accuracy_bc ~ I(n_estimators^1) +
+  I(max_depth^1), data = df_fit)
+summary(final_bc.lm_num)
+# Once again normality tests of residuals
+lillie.test(residuals(final_bc.lm_num))
+shapiro.test(residuals(final_bc.lm_num))
+
+#Once again eteriscedasticity analysis
+bptest(final_bc.lm_num)
+
+#Plotting summary of the linear regression model
+par(mfrow = c(2, 2))
+plot(final_bc.lm_num)
+
+
+# contourPlot(final.lm_num, N = 25)
+new_data <- data.frame(
+  'n_estimators'     = seq(5, 505, length.out = 200),
+  'max_depth' = seq(5, 45, length.out = 200)
+)
+
+# Creating data grid for predictions
+new_data <- expand.grid(new_data)
+predictions <- predict(lm.numeric, new_data)
+new_data$accuracy <- predictions
+
+# Plotting the contour plot
+contour_plot <- ggplot(new_data, aes(n_estimators, max_depth, z = accuracy)) + 
+  # geom_raster(aes(fill = accuracy)) +
+  geom_contour(colour = "red", binwidth = 100) +
+  labs(title = 'Contour Plot for n_estimators and max_depth',
+       fill = 'accuracy') +
+  xlab('n_estimators') +
+  ylab('max_depth')
+contour_plot
