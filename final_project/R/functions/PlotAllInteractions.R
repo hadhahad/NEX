@@ -28,7 +28,8 @@ plotAllInteractions <- function(df, RESPONSE_NAME, OUT_PATH) {
               color = VAR_2
             ) +
             xlab(VAR_1) +
-            ylab(RESPONSE_NAME)
+            ylab(RESPONSE_NAME) +
+            scale_color_brewer(palette="Set1")
         )
         idx <- idx + 1
       }
