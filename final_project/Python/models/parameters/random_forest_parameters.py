@@ -51,3 +51,12 @@ center_param_grid = {
     'criterion': ['entropy', 'gini'],
     'bootstrap': [True, False]
 }
+
+best_param_grid = {
+    'n_estimators': [314],
+    'min_samples_split': [4],
+    'max_features': ['sqrt', 'log2'],
+    'max_depth': [45],
+    'criterion': ['entropy', 'gini'],
+    'bootstrap': [True, False]
+}
