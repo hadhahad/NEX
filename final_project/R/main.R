@@ -160,9 +160,9 @@ if (FALSE) {
 # df_design <- add.response(df_design, df_all$accuracy)
 # names(df_design)[length(colnames(df_design))] <- DEP_VAR
 
-lm.center <- lm(accuracy ~ I(n_estimators^1) +
-  I(min_samples_split^1) +
-  I(max_depth^1), data = df_all)
+lm.center <- lm(accuracy ~ -1 + n_estimators +
+  min_samples_split +
+  max_depth, data = df_all)
 summary(lm.center)
 op <- par(mfrow = c(2, 2))
 plot(lm.center)
@@ -176,11 +176,37 @@ par(op)
 # New data frame just not to mess with the main one
 df_fit <- df_all
 
-# Fitting the linear model
+
+# lm.center with numerical variables
+lm.center <- lm(accuracy ~ -1 + n_estimators +
+                  min_samples_split +
+                  max_depth, data = df_fit)
+summary(lm.center)
+op <- par(mfrow = c(2, 2))
+plot(lm.center)
+par(op)
+
+# Residual tests to test normality of residuals
+lillie.test(residuals(lm.center))
+shapiro.test(residuals(lm.center))
+
+# Heteriscedasticity analysis
+bptest(lm.center)
+
+
+# Fitting the empirical linear model
 lm.numeric_empirical <-
-  lm(log(accuracy) ~ I((n_estimators - median(n_estimators))^2) +
+  lm(log(accuracy) ~  -1 + I((n_estimators - median(n_estimators))^2) +
     I((max_depth - median(max_depth))^3), data = df_fit)
 summary(lm.numeric_empirical)
+
+# Plot of the linear model
+op <- par(mfrow = c(2, 2))
+plot(lm.numeric_empirical)
+par(op)
+
+
+# Polynomial fit
 lm.numeric <-
   lm(accuracy ~ poly(n_estimators, 1) +
     poly(max_depth, 2), data = df_fit)
