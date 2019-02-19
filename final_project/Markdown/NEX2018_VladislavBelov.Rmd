@@ -56,6 +56,9 @@ df_mapped <- toFactor(mapValues(df), DEP_VAR)
 df_mapped_center <- toFactor(mapValues(df_center), DEP_VAR)
 df_mapped_all <- toFactor(rbind(df_mapped, df_mapped_center), DEP_VAR)
 
+# New data frame just not to mess with the main one
+df_fit <- df_all
+
 ## Load the dataset
 fall_data <- read.csv(paste0(PATH_GENERAL, PATH_DATA, 'falldetection.csv'), stringsAsFactors = FALSE)
 
@@ -100,16 +103,7 @@ to classify activities according to basic inner body measurements. The
 classifier will be trained on a pre-prepaired dataset, as it is going to be 
 cleaned and, moreover, all of the explanatory variables will be normalized. 
 
-There will be multiple training sessions depending on the initial parameters of 
-the Random Forest model. This set of parameters will be called the grid of
-parameters. Each training session on the grid will be divided into $K$ folds (K-fold cross-
-validation), and the prediction accuracy will be 
-evaluated as the mean accuracy of cross-validation. Aforementioned procedures will provide 
-us with a new dataset with the parameter grid as explanatory variables and 
-model accuracy as the 
-response variable. We will analyze significance of parameters and their 
-interactions and look for the most efficient model given their range 
-which was present in the grid.
+There will be multiple training sessions depending on the initial parameters of the Random Forest model. This set of parameters will be called the grid of parameters. Each training session on the grid will be divided into $K$ folds (K-fold cross-validation), and the prediction accuracy will be evaluated as the mean accuracy of cross-validation. Aforementioned procedures will provide us with a new dataset with the parameter grid as explanatory variables and model accuracy as the response variable. We will analyze significance of different effects and their interactions and attempt to fit model accuracy.
 
 ![K-fold Cross-Validation Visualization](../Output/kfold_vizualization.png){height="350px"}
 
@@ -155,7 +149,7 @@ for performance of the Random Forest model.[^1] For instance, only `n_estimators
 ![Box Plot for All 6 Variables](../Output/box_plot_all_design_df_3.png)
 
 [^1]: All of the variables were mapped from actual ones to -1, 0 (in case of center points presence), and 1.
-[^2]: All tests are performed on the significance level of $\alpha = 5 \%$.
+[^2]: All tests will be performed on the significance level of $\alpha = 5 \%$.
 
 ## ANOVA without Interactions 
 
@@ -185,28 +179,202 @@ Looking at the main effects plot and taking into account facts presented above, 
 
 # Analysis of Interactions
 
-## Visual Analysis of Interactions
+## Visual Analysis of  Double Interactions
 
-From interaction plots presented below we can empiracally assess the importance of interactions between variables (**X** - important, **-** - not important):
+From interaction plots presented below we can empiracally assess the importance of interactions between variables ("**X**" - important, "**-**" - not important):[^3]
 
-| Variables | `bootstrap` | `max_depth` | `max_features` | `min_samples_split` | `criterion` | `n_estimators` |
-| :------------ |:---------: | :---------: | :------------: | :-----------------: | :---------: | :------------: |
-| `bootstrap` | *NA* | **-** | **X** | **X** | **-** | **X** |
-| `max_depth` | **-** | *NA* | **-** | **-** | **-** | **-** |
-| `max_features` | **X** | **-** | *NA* | **X** | **X** | **-** |
-| `min_samples_split` | **X** | **-** | **X** | *NA*| **X** | **-** |
-| `criterion` | **-** | **-** | **X** | **X** | *NA* | **-** |
-| `n_estimators` | **X** | **-** | **-** | **-** | **-** | *NA* |
+| Variables | `A` | `B` | `C` | `D` | `E` | `F` |
+| :---------- |:-----: | :-----: | :-----: | :-----: | :-----: | :-----: |
+| `A` | *NA* | **-** | **X** | **X** | **-** | **X** |
+| `B` | **-** | *NA* | **-** | **-** | **-** | **-** |
+| `C` | **X** | **-** | *NA* | **X** | **X** | **-** |
+| `D` | **X** | **-** | **X** | *NA*| **X** | **-** |
+| `E` | **-** | **-** | **X** | **X** | *NA* | **-** |
+| `F` | **X** | **-** | **-** | **-** | **-** | *NA* |
 
 Table: Empirical Assessment of Pairwise Interactions
 
+[^3]: For the reason of taking less space on the page here we introduce the following notation: `A` - `bootstrap`, `B` - `max_depth`, `C` - `max_features`, `D` - `min_samples_split`, `E` - `criterion`, `F` - `n_estimators`.
+
 ![](../Output/interaction_plot_bootstrap.png)
+\
+
 ![](../Output/interaction_plot_max_depth.png)
+\
 
 ![](../Output/interaction_plot_max_features.png)
+\
 
 ![](../Output/interaction_plot_min_samples_split.png)
+\
 
 ![](../Output/interaction_plot_criterion.png)
+\
 
 ![](../Output/interaction_plot_n_estimators.png)
+\
+
+
+## Daniel Plot
+
+Daniel plot investigates variable signigicance with an assumption that main effects and interactions have Gaussian distribution with constant variance. Non-null effects then look like outliers on the normal plot. In figures presented below only significant effects have names near their the markers.
+
+
+![Daniel plot for all interactions](../Output/daniel_allint.png)
+\
+
+
+![Daniel plot for double interactions](../Output/daniel_doubleint.png)
+\
+
+
+## Pareto Plot
+
+Pareto plot is another instrument which aids us in the investigation of effects. The most significant ones are obviously those with the highest magnitude.
+
+
+![Pareto chart for all interactions](../Output/pareto_allint.png)
+\
+
+![Pareto chart for double interactions](../Output/pareto_doubleint.png)
+\
+
+
+## ANOVA with Double Interactions
+
+From the visual analysis given by three previous paragraphs it is arguably clear that none of higher interactions than double ones are significant enough for sufficient explanation of `accuracy` of the Random Forest classifier. Therefore, we also perform ANOVA with double interactions: 
+
+```{r echo=FALSE}
+# ANOVA with double interactions
+aov_doubleint.df_mapped <- aov(accuracy ~ (.)^2, data = df_mapped)
+summary(aov_doubleint.df_mapped)
+```
+
+In conclusion, interaction analysis enables us to construct ANOVA with double interactions containing only significant effects:
+
+```{r echo=FALSE}
+# Final ANOVA according to previous interaction analysis
+aov_final.df_mapped <- aov(
+  accuracy ~ max_depth + n_estimators + min_samples_split:bootstrap +
+    min_samples_split + n_estimators:bootstrap + criterion +
+    min_samples_split:max_depth + n_estimators:min_samples_split +
+    max_depth:criterion,
+  data = df_mapped
+)
+summary(aov_final.df_mapped)
+```
+
+
+# Center Points
+
+Up to this point we used $2^6$ factorial design and tried to determine significant effects on model `accuracy` using linear fits. Now center points for numeric variables are introduced to determine whether any curvature with respect to the response variable is present. Firstly we take a look at box plots:
+
+&nbsp;
+
+![Box plot for numeric variables with center points](../Output/box_plot_center_design_df_3.png){height="600px"}
+\
+
+Box plots indicate that curvature is present to some extent. Nonetheless, if a linear model without an intercept is built for the whole data set (original $2^6$-factorial design with added center points), one can see that factors `n_estimators`, `max_depth`, `min_samples_split` are still essential even as linear terms. 
+
+
+```{r echo=FALSE}
+# Linear model for the factorial design with center points
+lm.center <- lm(accuracy ~ -1 + n_estimators +
+  min_samples_split +
+  max_depth, data = df_all)
+summary(lm.center)
+```
+
+
+\pagebreak
+
+# Linear Regression
+
+
+## Pure Linear Fit
+
+Finally, we perform a linear fit for our design data with center points.
+
+```{r echo=FALSE}
+# lm.center with numerical variables
+lm.center <- lm(accuracy ~ -1 + n_estimators +
+                  min_samples_split +
+                  max_depth, data = df_fit)
+summary(lm.center)
+```
+
+
+
+![Pure Linear Model](../Output/lm_center_numeric.png){height="425px"}
+\
+
+We also note that residuals of this linear model are normally distributed and Breusch-Pagan test against heteroskedasticity enables us to accept the null hypothesis.
+
+```{r echo=FALSE}
+# Residual tests to test normality of residuals
+lillie.test(residuals(lm.center))
+shapiro.test(residuals(lm.center))
+
+# Heteriscedasticity analysis
+bptest(lm.center)
+```
+
+
+## Empirical Fit with a Linear Model
+
+Then we construct a linear model with explicit functional dependence 
+
+$$\log(Y) = \beta_1 (X_1 - median(X1))^2 + \beta_2 (X_2 - median(X_2))^3$$
+
+where $Y \equiv$ `accuracy`, $X_1 \equiv$ `n_estimators`and $X_2 \equiv$ `max_depth`. The model formula is deduced empirically from box plots displaying center points. One can easily notice that the R-squared statistic has improved in comparion to the previous model. However, for this model, residuals are clearly not normally distributed and Breusch-Pagan test against heteroskedasticity rejects the null hypothesis.
+
+```{r echo=FALSE}
+# Fitting the linear model
+lm.numeric_empirical <-
+  lm(log(accuracy) ~  -1 + I((n_estimators - median(n_estimators))^2) +
+    I((max_depth - median(max_depth))^3), data = df_fit)
+summary(lm.numeric_empirical)
+```
+
+
+![Empirical Fit](../Output/lm_empirical.png){height="425px"}
+\
+
+
+## Polynomial Fit
+
+Lastly we perform a fit with orthogonal polynomials given only available data. This model surpasses the first one in terms of R-squared statistic. Moreover, it passes the test of residuals normality and accepts the null hypothesis of Breusch-Pagan test.
+
+```{r echo=FALSE}
+# Polynomial fit
+lm.numeric <-
+  lm(accuracy ~ poly(n_estimators, 1) +
+    poly(max_depth, 2), data = df_fit)
+summary(lm.numeric)
+```
+
+Tests results:
+
+```{r echo=FALSE}
+# Residual tests to test normality of residuals
+lillie.test(residuals(lm.numeric))
+shapiro.test(residuals(lm.numeric))
+
+# Heteriscedasticity analysis
+bptest(lm.numeric)
+```
+
+
+![Polynomial Fit](../Output/lm_poly.png){height="425px"}
+\
+
+Finally we choose this model to fit `accuracy` of the Random Forest classifier. Here we also present a 3D visualization of this fit:
+
+
+![3D surface plot of the polynomial fit](../Output/surface_3d.png)
+\
+
+
+# Conclusion
+
+The polynomial fit we chose has provided us with arguably best parameters for `n_estimators` and `max_depth`. This report is conlcluded with results of the small grid search with `n_estimators` = 314, `max_depth` =  45: with `min_samples_split` = 4, `max_features` = "sqrt", `criterion` = "gini", `bootstrap` = True we obtain `accuracy` equal to 0.7691845. Computed accuracy is higher than that of our prior grid search, so this project was not done for nothing and has "beared its fruit".
