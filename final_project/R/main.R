@@ -124,7 +124,7 @@ pareto(dp_doubleint$x, names = dp_doubleint$effect)
 
 # Final ANOVA according to previous interaction analysis
 aov_final.df_mapped <- aov(
-  accuracy ~ max_depth + n_estimators + min_samples_split:bootstrap +
+  accuracy ~ max_depth + n_estimators + min_samples_split:bootstrap + bootstrap +
     min_samples_split + n_estimators:bootstrap + criterion +
     min_samples_split:max_depth + n_estimators:min_samples_split +
     max_depth:criterion,
@@ -175,6 +175,9 @@ par(op)
 
 # New data frame just not to mess with the main one
 df_fit <- df_all
+df_fit$max_features <- as.numeric(as.character(df_mapped_all$max_features))
+df_fit$criterion <- as.numeric(as.character(df_mapped_all$criterion))
+df_fit$bootstrap <- as.numeric(as.character(df_mapped_all$bootstrap))
 
 
 # lm.center with numerical variables
@@ -249,3 +252,54 @@ p <- plot_ly(x = x, y = y, z = z) %>%
   )
 chart_link <- api_create(p, filename = "surface-2")
 chart_link
+
+
+################################################################################
+###############                     Extra                        ###############
+################################################################################
+
+lm.extra <- lm(
+  accuracy ~ max_depth + n_estimators + I(max_depth^2) + min_samples_split*bootstrap + 
+    bootstrap + min_samples_split + n_estimators*bootstrap + criterion + n_estimators*min_samples_split,
+  data = df_fit
+)
+summary(lm.extra)
+anova(lm.extra)
+op <- par(mfrow = c(2, 2))
+plot(lm.extra)
+par(op)
+
+# Residual tests to test normality of residuals
+lillie.test(residuals(lm.extra))
+shapiro.test(residuals(lm.extra))
+
+# Heteriscedasticity analysis
+bptest(lm.extra)
+
+# Function to evaluate the fit function on the grid
+vals_xy <- function(x, y, model = lm.extra) {
+  new_data <- data.frame(
+    'n_estimators' = x,
+    'min_samples_split' = 12, 
+    'max_depth' = y,
+    'criterion' = c(1),
+    'bootstrap' = c(-1)
+  )
+  return(predict(model, new_data))
+}
+
+# Set up the grid
+x <- seq(5, 505, length.out = 150)
+y <- seq(5, 45, length.out = 150)
+z <- outer(X = x, Y = y, FUN = vals_xy)
+
+dev.off()
+image(x, y, z, 
+      axes=FALSE, 
+      xlab="n_estimators", ylab="min_samples_split")
+contour(x, y, z, 
+        levels = seq(60, 120, by = 5), 
+        add = TRUE, col = "peru")
+axis(1, at = seq(min(x), max(x), by = 1))
+axis(2, at = seq(min(y), max(y), by = 1))
+box()
