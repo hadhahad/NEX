@@ -259,8 +259,9 @@ chart_link
 ################################################################################
 
 lm.extra <- lm(
-  accuracy ~ max_depth + n_estimators + I(max_depth^2) + min_samples_split*bootstrap + 
-    bootstrap + min_samples_split + n_estimators*bootstrap + criterion + n_estimators*min_samples_split,
+  accuracy ~ max_depth + n_estimators + I(max_depth^2) + 
+    min_samples_split*bootstrap + bootstrap + min_samples_split + 
+    n_estimators*bootstrap + criterion + n_estimators*min_samples_split,
   data = df_fit
 )
 summary(lm.extra)
