@@ -3,6 +3,7 @@
 *.RData
 *.Ruserdata
 *.Rproj
+*.history
 NEX2018_00
 
 .idea/
